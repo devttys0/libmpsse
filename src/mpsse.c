@@ -123,6 +123,9 @@ struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int
 	{
 		memset(mpsse, 0, sizeof(struct mpsse_context));
 
+		/* Set cs to the default chip select pin */
+		mpsse->cs = CS;
+
 		/* Legacy; flushing is no longer needed, so disable it by default. */
 		FlushAfterRead(mpsse, 0);
 
@@ -254,6 +257,26 @@ void EnableBitmode(struct mpsse_context *mpsse, int tf)
 	}
 }
 
+int ConfigurePinIO(struct mpsse_context *mpsse)
+{
+	/* Clock, data out, chip select pins are outputs; all others are inputs. */
+	mpsse->tris = DEFAULT_TRIS | mpsse->cs;
+	
+	/* Clock and chip select pins idle high; all others are low */
+	mpsse->pidle = mpsse->pstart = mpsse->pstop = DEFAULT_PORT | mpsse->cs;
+	
+	/* During reads and writes the chip select pin is brought low */
+	mpsse->pstart &= ~mpsse->cs;
+
+	return MPSSE_OK;
+}
+
+int SetCSPin(struct mpsse_context *mpsse, int pin)
+{
+	mpsse->cs = pin;
+	return ConfigurePinIO(mpsse);
+}
+
 /*
  * Sets the appropriate transmit and receive commands based on the requested mode and byte order.
  *
@@ -277,14 +300,8 @@ int SetMode(struct mpsse_context *mpsse, int endianess)
 		mpsse->rx   = MPSSE_DO_READ  | endianess;
 		mpsse->txrx = MPSSE_DO_WRITE | MPSSE_DO_READ | endianess;
 
-		/* Clock, data out, chip select pins are outputs; all others are inputs. */
-		mpsse->tris = DEFAULT_TRIS;
-
-		/* Clock and chip select pins idle high; all others are low */
-		mpsse->pidle = mpsse->pstart = mpsse->pstop = DEFAULT_PORT;
-
-		/* During reads and writes the chip select pin is brought low */
-		mpsse->pstart &= ~CS;
+		/* Initialize the pin settings in the MPSSE internal structure */
+		ConfigurePinIO(mpsse);
 
 		/* Disable FTDI internal loopback */
 	        SetLoopback(mpsse, 0);
