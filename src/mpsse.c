@@ -277,6 +277,11 @@ int SetCSPin(struct mpsse_context *mpsse, int pin)
 	return ConfigurePinIO(mpsse);
 }
 
+int IsOpen(struct mpsse_context *mpsse)
+{
+	return mpsse->open;
+}
+
 /*
  * Sets the appropriate transmit and receive commands based on the requested mode and byte order.
  *
