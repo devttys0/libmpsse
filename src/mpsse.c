@@ -435,7 +435,7 @@ int SetClock(struct mpsse_context *mpsse, uint32_t freq)
 	unsigned char buf[CMD_SIZE] = { 0 };
 
 	/* Do not call is_valid_context() here, as the FTDI chip may not be completely configured when SetClock is called */
-	if(mpsse)
+	if(mpsse && freq)
 	{
 		divisor_sixty = freq2div(SIXTY_MHZ, freq);
 		divisor_twelve = freq2div(TWELVE_MHZ, freq);
