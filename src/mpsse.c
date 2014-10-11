@@ -431,34 +431,32 @@ int SetClock(struct mpsse_context *mpsse, uint32_t freq)
 {
 	int retval = MPSSE_FAIL;
 	uint32_t system_clock = 0;
-	uint16_t divisor = 0;
+	uint16_t divisor_sixty = 0, divisor_twelve = 0, divisor=0;
 	unsigned char buf[CMD_SIZE] = { 0 };
 
 	/* Do not call is_valid_context() here, as the FTDI chip may not be completely configured when SetClock is called */
 	if(mpsse)
 	{
-		if(freq > SIX_MHZ)
+		divisor_sixty = freq2div(SIXTY_MHZ, freq);
+		divisor_twelve = freq2div(TWELVE_MHZ, freq);
+		if( labs((int64_t)freq - (uint64_t)div2freq(SIXTY_MHZ, divisor_sixty)) >
+			labs((int64_t)freq - (uint64_t)div2freq(TWELVE_MHZ, divisor_twelve)))
 		{
-			buf[0] = TCK_X5;
-			system_clock = SIXTY_MHZ;
+			// 60MHz error > 12MHz error, select 12MHz
+			buf[0] = TCK_D5;
+			system_clock = TWELVE_MHZ;
+			divisor = divisor_twelve;
 		}
 		else
 		{
-			buf[0] = TCK_D5;
-			system_clock = TWELVE_MHZ;
+			// 60MHz is closer
+			buf[0] = TCK_X5;
+			system_clock = SIXTY_MHZ;
+			divisor = divisor_sixty;
 		}
-		
+
 		if(raw_write(mpsse, buf, 1) == MPSSE_OK)
 		{
-			if(freq <= 0)
-			{
-				divisor = 0xFFFF;
-			}
-			else
-			{
-				divisor = freq2div(system_clock, freq);
-			}
-	
 			buf[0] = TCK_DIVISOR;
 			buf[1] = (divisor & 0xFF);
 			buf[2] = ((divisor >> 8) & 0xFF);
