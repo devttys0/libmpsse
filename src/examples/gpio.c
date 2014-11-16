@@ -7,7 +7,7 @@ int main(void)
 	struct mpsse_context *io = NULL;
 	int i = 0, retval = EXIT_FAILURE;
 
-	io = MPSSE(GPIO, 0, 0);
+	io = MPSSE(GPIO, 1, 0);
 	
 	if(io && io->open)
 	{
