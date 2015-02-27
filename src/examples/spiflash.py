@@ -197,7 +197,7 @@ if __name__ == "__main__":
 				size = len(data)
 			if not blocksize:
 				blocksize = 256
-			sys.stdout.write("Writing %d bytes from %s to the chip starting at address 0x%X using a blocksize of %d" % (size, fname, address, blocksize))
+			sys.stdout.write("Writing %d bytes from %s to the chip starting at address 0x%X using a blocksize of %d ..." % (size, fname, address, blocksize))
 			sys.stdout.flush()
 			spi.Write(data[0:size], address)
 			print "done."
