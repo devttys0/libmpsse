@@ -137,7 +137,7 @@ if __name__ == "__main__":
 		data = ""
 
 		try:
-			opts, args = GetOpt(sys.argv[1:], "f:s:b:a:r:w:eipvh", ["frequency=", "size=", "blocksize=", "address=", "read=", "write=", "id=", "erase", "verify", "pin-mappings", "help"])
+			opts, args = GetOpt(sys.argv[1:], "f:s:b:i:a:r:w:epvh", ["frequency=", "size=", "blocksize=", "id_len=","address=", "read=", "write=", "erase", "verify", "pin-mappings", "help"])
 		except GetoptError, e:
 			print e
 			usage()
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 				fname = arg
 			elif opt in ('-i', '--id'):
 				action = "id"
-				id_length = int(arg)
+				id_len = int(arg)
 			elif opt in ('-e', '--erase'):
 				action = "erase"
 			elif opt in ('-v', '--verify'):
