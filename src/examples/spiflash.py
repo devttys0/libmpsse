@@ -203,9 +203,9 @@ if __name__ == "__main__":
 			print "done."
 
 		elif action == "id":
-			if not id_length:
-				id_length = 3
-			for byte in spi.ChipID(id_length):
+			if not id_len:
+				id_len = 3
+			for byte in spi.ChipID(id_len):
 				print ("%.2X" % ord(byte)),
 			print ""
 
