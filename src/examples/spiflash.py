@@ -13,15 +13,14 @@ class SPIFlash(object):
 
 	ID_LENGTH = 3		# Normal SPI chip ID length, in bytes
 	ADDRESS_LENGTH = 3	# Normal SPI flash address length (24 bits, aka, 3 bytes)
-	BLOCK_SIZE = 256	# SPI block size, writes must be done in multiples of this size
 	PP_PERIOD = .025	# Page program time, in seconds
-
+	
 	def __init__(self, speed=FIFTEEN_MHZ):
 
 		# Sanity check on the specified clock speed
 		if not speed:
 			speed = FIFTEEN_MHZ
-	
+		
 		self.flash = MPSSE(SPI0, speed, MSB)
 		self.chip = self.flash.GetDescription()
 		self.speed = self.flash.GetClock()
@@ -50,7 +49,7 @@ class SPIFlash(object):
 
 		return data
 
-	def Write(self, data, address=0):
+	def Write(self, data, address=0, blocksize=256):
 		count = 0
 
 		while count < len(data):
@@ -60,12 +59,12 @@ class SPIFlash(object):
         		self.flash.Stop()
 
 			self.flash.Start()
-			self.flash.Write(self.WCMD + self._addr2str(address) + data[address:address+self.BLOCK_SIZE])
+			self.flash.Write(self.WCMD + self._addr2str(address) + data[address:address+blocksize])
 			self.flash.Stop()
 
 			sleep(self.PP_PERIOD)
-			address += self.BLOCK_SIZE
-			count += self.BLOCK_SIZE
+			address += blocksize
+			count += blocksize
 
 	def Erase(self):
 		self.flash.Start()
@@ -117,6 +116,7 @@ if __name__ == "__main__":
 		print "\t-r, --read=<file>      Read data from the chip to file"
 		print "\t-w, --write=<file>     Write data from file to the chip"
 		print "\t-s, --size=<int>       Set the size of data to read/write"
+		print "\t-b, --blocksize=<int>  Set the block/page - size of data to read/write"
 		print "\t-a, --address=<int>    Set the starting address for the read/write operation [0]"
 		print "\t-f, --frequency=<int>  Set the SPI clock frequency, in hertz [15,000,000]"
 		print "\t-i, --id               Read the chip ID"
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 		data = ""
 
 		try:
-			opts, args = GetOpt(sys.argv[1:], "f:s:a:r:w:eipvh", ["frequency=", "size=", "address=", "read=", "write=", "id", "erase", "verify", "pin-mappings", "help"])
+			opts, args = GetOpt(sys.argv[1:], "f:s:b:a:r:w:eipvh", ["frequency=", "size=", "blocksize=", "address=", "read=", "write=", "id", "erase", "verify", "pin-mappings", "help"])
 		except GetoptError, e:
 			print e
 			usage()
@@ -148,6 +148,8 @@ if __name__ == "__main__":
 				freq = int(arg)
 			elif opt in ('-s', '--size'):
 				size = int(arg)
+			elif opt in ('-b', '--blocksize'):
+				blocksize = int(arg)
 			elif opt in ('-a', '--address'):
 				address = int(arg)
 			elif opt in ('-r', '--read'):
@@ -193,8 +195,9 @@ if __name__ == "__main__":
 			data = open(fname, 'rb').read()
 			if not size:
 				size = len(data)
-
-			sys.stdout.write("Writing %d bytes from %s to the chip starting at address 0x%X..." % (size, fname, address))
+			if not blocksize:
+				blocksize = 256
+			sys.stdout.write("Writing %d bytes from %s to the chip starting at address 0x%X using a blocksize of %d" % (size, fname, address, blocksize))
 			sys.stdout.flush()
 			spi.Write(data[0:size], address)
 			print "done."
