@@ -139,7 +139,7 @@ if __name__ == "__main__":
 		data = ""
 
 		try:
-			opts, args = GetOpt(sys.argv[1:], "f:s:b:i:a:r:w:epvh", ["frequency=", "size=", "blocksize=", "id_len=","address=", "read=", "write=", "erase", "verify", "pin-mappings", "help"])
+			opts, args = GetOpt(sys.argv[1:], "f:s:b:l:a:r:w:eipvh", ["frequency=", "size=", "blocksize=", "id_len=","address=", "read=", "write=", "erase", "id", "verify", "pin-mappings", "help"])
 		except GetoptError, e:
 			print e
 			usage()
@@ -161,6 +161,7 @@ if __name__ == "__main__":
 				fname = arg
 			elif opt in ('-i', '--id'):
 				action = "id"
+			elif opt in ('-l', '--id_length'):
 				id_len = int(arg)
 			elif opt in ('-e', '--erase'):
 				action = "erase"
@@ -203,6 +204,8 @@ if __name__ == "__main__":
 			print "done."
 
 		elif action == "id":
+			if not id_len:
+				id_len = 3
 			for byte in spi.ChipID(id_len):
 				print ("%.2X" % ord(byte)),
 			print ""
