@@ -32,7 +32,7 @@ struct vid_pid supported_devices[] = {
 			{ 0x0403, 0xBDC8, "Turtelizer JTAG/RS232 Adapter A" },
 			{ 0x0403, 0xCFF8, "Amontec JTAGkey" },
 			{ 0x0403, 0x8A98, "TIAO Multi Protocol Adapter"},
-			{ 0x0403, 0x8A99, "TIAO Multi Protocol Adapter Lite"
+			{ 0x0403, 0x8A99, "TIAO Multi Protocol Adapter Lite"},
 			{ 0x15BA, 0x0003, "Olimex Ltd. OpenOCD JTAG" },
 			{ 0x15BA, 0x0004, "Olimex Ltd. OpenOCD JTAG TINY" },
 
