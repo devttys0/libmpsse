@@ -119,6 +119,7 @@ if __name__ == "__main__":
 		print "\t-a, --address=<int>    Set the starting address for the read/write operation [0]"
 		print "\t-f, --frequency=<int>  Set the SPI clock frequency, in hertz [15,000,000]"
 		print "\t-i, --id=<int>         Read the chip ID, requires Length of ID in bytes [3]"
+		print "\t-l, --id_len=<int>	Length of chip ID in bytes [3]"
 		print "\t-v, --verify           Verify data that has been read/written"
 		print "\t-e, --erase            Erase the entire chip"
 		print "\t-p, --pin-mappings     Display a table of SPI flash to FTDI pin mappings"
