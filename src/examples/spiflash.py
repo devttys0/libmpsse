@@ -11,7 +11,6 @@ class SPIFlash(object):
 	CECMD = "\xc7"		# Standard SPI flash chip erase command (0xC7)
 	IDCMD = "\x9f"		# Standard SPI flash chip ID command (0x9F)
 
-	ID_LENGTH = 3		# Normal SPI chip ID length, in bytes
 	ADDRESS_LENGTH = 3	# Normal SPI flash address length (24 bits, aka, 3 bytes)
 	PP_PERIOD = .025	# Page program time, in seconds
 	
@@ -75,10 +74,10 @@ class SPIFlash(object):
 		self.flash.Write(self.CECMD)
 		self.flash.Stop()
 
-	def ChipID(self):
+	def ChipID(self, idlen):
 		self.flash.Start()
 		self.flash.Write(self.IDCMD)
-		chipid = self.flash.Read(self.IDLEN)
+		chipid = self.flash.Read(idlen)
 		self.flash.Stop()
 		return chipid
 
@@ -119,7 +118,7 @@ if __name__ == "__main__":
 		print "\t-b, --blocksize=<int>  Set the block/page - size of data to read/write"
 		print "\t-a, --address=<int>    Set the starting address for the read/write operation [0]"
 		print "\t-f, --frequency=<int>  Set the SPI clock frequency, in hertz [15,000,000]"
-		print "\t-i, --id               Read the chip ID"
+		print "\t-i, --id=<int>         Read the chip ID, requires Length of ID in bytes"
 		print "\t-v, --verify           Verify data that has been read/written"
 		print "\t-e, --erase            Erase the entire chip"
 		print "\t-p, --pin-mappings     Display a table of SPI flash to FTDI pin mappings"
@@ -138,7 +137,7 @@ if __name__ == "__main__":
 		data = ""
 
 		try:
-			opts, args = GetOpt(sys.argv[1:], "f:s:b:a:r:w:eipvh", ["frequency=", "size=", "blocksize=", "address=", "read=", "write=", "id", "erase", "verify", "pin-mappings", "help"])
+			opts, args = GetOpt(sys.argv[1:], "f:s:b:a:r:w:eipvh", ["frequency=", "size=", "blocksize=", "address=", "read=", "write=", "id=", "erase", "verify", "pin-mappings", "help"])
 		except GetoptError, e:
 			print e
 			usage()
@@ -160,6 +159,7 @@ if __name__ == "__main__":
 				fname = arg
 			elif opt in ('-i', '--id'):
 				action = "id"
+				id_length = int(arg)
 			elif opt in ('-e', '--erase'):
 				action = "erase"
 			elif opt in ('-v', '--verify'):
@@ -203,8 +203,9 @@ if __name__ == "__main__":
 			print "done."
 
 		elif action == "id":
-
-			for byte in spi.ChipID():
+			if not id_length:
+				id_length = 3
+			for byte in spi.ChipID(id_length):
 				print ("%.2X" % ord(byte)),
 			print ""
 
@@ -234,4 +235,3 @@ if __name__ == "__main__":
 		spi.Close()
 
 	main()
-
