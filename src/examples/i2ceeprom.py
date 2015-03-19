@@ -1,6 +1,32 @@
 #!/usr/bin/env python
 
-import argparse, struct, sys, time
+import argparse, os, struct, sys, time
+
+# Check if were running on Python2.7
+if (sys.version[0:3] != "2.7"):
+	print("This script is meant to be run on python2.7.x ! Exiting")
+	exit(1)
+
+found=False
+# Check if MPSSE lib can be found in pythons path first
+for path in range(len(sys.path)):
+	if sys.path[path] != '' and os.path.exists(sys.path[path]) and os.path.isdir(sys.path[path]):
+		mpssename = "%s/mpsse.pyc" % sys.path[path]
+		if os.path.exists(mpssename) and os.path.isfile(mpssename):
+			found = True
+# Try to locate mpsse in typical default dirs, if not found.
+if found != True :
+	custom_paths = ['/usr/lib/python2.7/site-packages', '/usr/local/lib/python2.7/site-packages', '/usr/lib64/python2.7/site-packages', '/usr/local/lib64/python2.7/site-packages']
+	for path in range(len(custom_paths)):
+		if custom_path[path] != '' and os.path.exists(custom_path[path]) and os.path.isdir(custom_path[path]):
+			mpssename = "%s/mpsse.pyc" % custom_path[path]
+			if os.path.exists(mpssename) and os.path.isfile(mpssename):
+				sys.path.append(custom_path[path])
+				found = True
+if found != True:
+	print("MPSSE Library could not be found. Exiting")
+	exit(1)
+
 from fish import ProgressFish
 from mpsse import *
 
