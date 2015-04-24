@@ -97,8 +97,8 @@ class MPSSE(object):
 		self.libmpsse.MPSSE.restype = ctypes.c_void_p
 		self.libmpsse.OpenIndex.restype = ctypes.c_void_p
 
-		self.libmpsse.Read = ctypes.c_char_p
-		self.libmpsse.Transfer = ctypes.c_char_p
+		self.libmpsse.Read.restype = ctypes.c_char_p
+		self.libmpsse.Transfer.restype = ctypes.c_char_p
 		self.libmpsse.ErrorString.restype = ctypes.c_char_p
 		self.libmpsse.GetDescription.restype = ctypes.c_char_p
 
