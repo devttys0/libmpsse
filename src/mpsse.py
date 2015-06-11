@@ -1,63 +1,56 @@
-import os
-import sys
-import glob
-import ctypes
-import ctypes.util
+import pylibmpsse as _mpsse
 
-MPSSE_OK   = 0
-MPSSE_FAIL = -1
+MPSSE_OK = _mpsse.MPSSE_OK
+MPSSE_FAIL = _mpsse.MPSSE_FAIL
 	
-MSB = 0x00
-LSB = 0x08
+MSB = _mpsse.MSB
+LSB = _mpsse.LSB
 
-ACK  = 0
-NACK = 1
+ACK = _mpsse.ACK
+NACK = _mpsse.NACK
 
-SPI0 	= 1
-SPI1 	= 2
-SPI2 	= 3
-SPI3 	= 4
-I2C 	= 5
-GPIO 	= 6
-BITBANG = 7
+SPI0 = _mpsse.SPI0
+SPI1 = _mpsse.SPI1
+SPI2 = _mpsse.SPI2
+SPI3 = _mpsse.SPI3
+I2C = _mpsse.I2C
+GPIO = _mpsse.GPIO
+BITBANG = _mpsse.BITBANG
 
-GPIOL0 = 0
-GPIOL1 = 1
-GPIOL2 = 2
-GPIOL3 = 3
-GPIOH0 = 4
-GPIOH1 = 5
-GPIOH2 = 6
-GPIOH3 = 7
-GPIOH4 = 8
-GPIOH5 = 9
-GPIOH6 = 10
-GPIOH7 = 11
+GPIOL0 = _mpsse.GPIOL0
+GPIOL1 = _mpsse.GPIOL1
+GPIOL2 = _mpsse.GPIOL2
+GPIOL3 = _mpsse.GPIOL3
+GPIOH0 = _mpsse.GPIOH0
+GPIOH1 = _mpsse.GPIOH1
+GPIOH2 = _mpsse.GPIOH2
+GPIOH3 = _mpsse.GPIOH3
+GPIOH4 = _mpsse.GPIOH4
+GPIOH5 = _mpsse.GPIOH5
+GPIOH6 = _mpsse.GPIOH6
+GPIOH7 = _mpsse.GPIOH7
 
-IFACE_ANY = 0
-IFACE_A   = 1
-IFACE_B   = 2
-IFACE_C   = 3
-IFACE_D   = 4
+IFACE_ANY = _mpsse.IFACE_ANY
+IFACE_A = _mpsse.IFACE_A
+IFACE_B = _mpsse.IFACE_B
+IFACE_C = _mpsse.IFACE_C
+IFACE_D = _mpsse.IFACE_D
 
-ONE_HUNDRED_KHZ  = 100000
-FOUR_HUNDRED_KHZ = 400000
-ONE_MHZ          = 1000000
-TWO_MHZ          = 2000000
-FIVE_MHZ         = 5000000
-SIX_MHZ          = 6000000
-TEN_MHZ          = 10000000
-TWELVE_MHZ       = 12000000
-FIFTEEN_MHZ      = 15000000
-THIRTY_MHZ       = 30000000
-SIXTY_MHZ        = 60000000
+ONE_HUNDRED_KHZ = _mpsse.ONE_HUNDRED_KHZ
+FOUR_HUNDRED_KHZ = _mpsse.FOUR_HUNDRED_KHZ
+ONE_MHZ = _mpsse.ONE_MHZ
+TWO_MHZ = _mpsse.TWO_MHZ
+FIVE_MHZ = _mpsse.FIVE_MHZ
+SIX_MHZ = _mpsse.SIX_MHZ
+TEN_MHZ = _mpsse.TEN_MHZ
+TWELVE_MHZ = _mpsse.TWELVE_MHZ
+FIFTEEN_MHZ = _mpsse.FIFTEEN_MHZ
+THIRTY_MHZ = _mpsse.THIRTY_MHZ
 
 class MPSSE(object):
 	"""
 	Python class wrapper for libmpsse.
 	"""
-
-        LIBRARY = b'mpsse'
 
 	def __init__(self, mode=None, frequency=ONE_HUNDRED_KHZ, endianess=MSB):
 		"""
@@ -71,16 +64,10 @@ class MPSSE(object):
 		Returns None.
 		"""
 		self.context = None
-		self.libmpsse = self._load_library(self.LIBRARY)
-		if not self.libmpsse:
-			raise Exception("Failed to load library 'lib$s'" % self.LIBRARY)
-
-		self._ctypes_init()
-
-                if mode is not None:
-			self.context = self.libmpsse.MPSSE(mode, frequency, endianess)
-			if not self.libmpsse.IsOpen(self.context):
-				raise Exception("Failed to initialize MPSSE: " + self.ErrorString())
+		if mode is not None:
+			self.context = _mpsse.MPSSE(mode, frequency, endianess)
+			if self.context.open == 0:
+				raise Exception, self.ErrorString()
 
 	def __enter__(self):
 		return self
@@ -92,52 +79,6 @@ class MPSSE(object):
 	def __del__(self):
 		if self.context:
 			self.Close()
-
-	def _ctypes_init(self):
-		self.libmpsse.MPSSE.restype = ctypes.c_void_p
-		self.libmpsse.OpenIndex.restype = ctypes.c_void_p
-
-		self.libmpsse.Read = ctypes.c_char_p
-		self.libmpsse.Transfer = ctypes.c_char_p
-		self.libmpsse.ErrorString.restype = ctypes.c_char_p
-		self.libmpsse.GetDescription.restype = ctypes.c_char_p
-
-	def _load_library(self, library):
-		'''
-		Locates and loads the specified library.
-
-		@library - Library name (e.g., 'magic' for libmagic).
- 
-		Returns a handle to the library.
-		'''
-		lib_path = None
-		system_paths = {
-			'linux'  : ['/usr/local/lib/lib%s.so' % library],
-			'linux2' : ['/usr/local/lib/lib%s.so' % library],
-			'linux3' : ['/usr/local/lib/lib%s.so' % library],
-			'darwin' : ['/opt/local/lib/lib%s.dylib' % library,
-				    '/usr/local/lib/lib%s.dylib' % library,
-				   ] + glob.glob('/usr/local/Cellar/lib%s/*/lib/lib%s.dylib' % (library, library)),
-
-			'win32'  : ['%s.dll' % library]
-		}
-
-		try:
-			lib = ctypes.cdll.LoadLibrary(ctypes.util.find_library(library))
-			if lib:
-				return lib
-		except OSError:
-			pass
-
-		for path in system_paths[sys.platform]:
-			if os.path.exists(path):
-				lib_path = path
-				break
-
-		if not lib_path:
-			raise Exception("Failed to locate library '%s'" % library)
-
-		return ctypes.cdll.LoadLibrary(lib_path)
 
 	def Open(self, vid, pid, mode, frequency=ONE_HUNDRED_KHZ, endianess=MSB, interface=IFACE_A, description=None, serial=None, index=0):
 		"""
@@ -157,9 +98,9 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exeption on failure.
 		"""
-		self.context = self.libmpsse.OpenIndex(vid, pid, mode, frequency, endianess, interface, description, serial, index)
+		self.context = _mpsse.OpenIndex(vid, pid, mode, frequency, endianess, interface, description, serial, index)
 		if self.context.open == 0:
-			raise Exception("Failed to open MPSSE: " + self.ErrorString())
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def Close(self):
@@ -168,14 +109,14 @@ class MPSSE(object):
 
 		Returns None.
 		"""
-		retval = self.libmpsse.Close(self.context)
+		retval = _mpsse.Close(self.context)
 		self.context = None
 	
 	def ErrorString(self):
 		"""
 		Returns the last libftdi error string.
 		"""
-		return self.libmpsse.ErrorString(self.context)
+		return _mpsse.ErrorString(self.context)
 
 	def SetMode(self, mode, endianess):
 		"""
@@ -188,8 +129,8 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.SetMode(self.context, mode, endianess) == MPSSE_FAIL:
-			raise Exception("Failed to set mode: " + self.ErrorString())
+		if _mpsse.SetMode(self.context, mode, endianess) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def EnableBitmode(self, tf):
@@ -201,7 +142,7 @@ class MPSSE(object):
 
 		Returns None.
 		"""
-		self.libmpsse.EnableBitmode(self.context, tf)
+		_mpsse.EnableBitmode(self.context, tf)
 
 	def FlushAfterRead(self, tf):
 		"""
@@ -211,7 +152,7 @@ class MPSSE(object):
 
 		Returns None.
 		"""
-		return self.libmpsse.FlushAfterRead(self.context, tf)
+		return _mpsse.FlushAfterRead(self.context, tf)
 
 	def SetClock(self, frequency):
 		"""
@@ -223,34 +164,34 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.SetClock(self.context, frequency) == MPSSE_FAIL:
-			raise Exception("Failed to set clock:" + self.ErrorString())
+		if _mpsse.SetClock(self.context, frequency) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def GetClock(self):
 		"""
 		Returns the currently configured clock rate, in hertz.
 		"""
-		return self.libmpsse.GetClock(self.context)
+		return _mpsse.GetClock(self.context)
 
 	def GetVid(self):
 		"""
 		Returns the vendor ID of the FTDI chip.
 		"""
-		return self.libmpsse.GetVid(self.context)
+		return _mpsse.GetVid(self.context)
 
 	def GetPid(self):
 		"""
 		Returns the product ID of the FTDI chip.
 		"""
-		return self.libmpsse.GetPid(self.context)
+		return _mpsse.GetPid(self.context)
 
 	def GetDescription(self):
 		"""
 		Returns the description of the FTDI chip, if any. 
 		This will only be populated if __init__ was used to open the device.
 		"""
-		return self.libmpsse.GetDescription(self.context)
+		return _mpsse.GetDescription(self.context)
 
 	def SetLoopback(self, enable):
 		"""
@@ -261,8 +202,8 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.SetLoopback(self.context, enable) == MPSSE_FAIL:
-			raise Exception("Failed to set loopback: " + self.ErrorString())
+		if _mpsse.SetLoopback(self.context, enable) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def SetCSIdle(self, idle):
@@ -273,7 +214,7 @@ class MPSSE(object):
 
 		Returns None.
 		"""
-		self.libmpsse.SetCSIdle(self.context, idle)
+		_mpsse.SetCSIdle(self.context, idle)
 
 	def Start(self):
 		"""
@@ -282,8 +223,8 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.Start(self.context) == MPSSE_FAIL:
-			raise Exception("Failed to send start signal: " + self.ErrorString())
+		if _mpsse.Start(self.context) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def Stop(self):
@@ -293,8 +234,8 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.Stop(self.context) == MPSSE_FAIL:
-			raise Exception("Failed to send stop signal: " + self.ErrorString())
+		if _mpsse.Stop(self.context) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def Write(self, data):
@@ -306,8 +247,8 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.Write(self.context, data) == MPSSE_FAIL:
-			raise Exception("Failed to write data: " + self.ErrorString())
+		if _mpsse.Write(self.context, data) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def Read(self, size):
@@ -318,7 +259,7 @@ class MPSSE(object):
 
 		Returns a string of size bytes.
 		"""
-		return self.libmpsse.Read(self.context, size)
+		return _mpsse.Read(self.context, size)
 
 	def Transfer(self, data):
 		"""
@@ -329,7 +270,7 @@ class MPSSE(object):
 
 		Returns a string of len(data) bytes.
 		"""
-		return self.libmpsse.Transfer(self.context, data)
+		return _mpsse.Transfer(self.context, data)
 
 	def SetAck(self, ack):
 		"""
@@ -340,7 +281,7 @@ class MPSSE(object):
 
 		Returns None.
 		"""
-		self.libmpsse.SetAck(self.context, ack)
+		_mpsse.SetAck(self.context, ack)
 
 	def SendAcks(self):
 		"""
@@ -348,7 +289,7 @@ class MPSSE(object):
 
 		Returns None.
 		"""
-		self.libmpsse.SendAcks(self.context)
+		_mpsse.SendAcks(self.context)
 
 	def SendNacks(self):
 		"""
@@ -356,7 +297,7 @@ class MPSSE(object):
 
 		Returns None.
 		"""
-		return self.libmpsse.SendNacks(self.context)
+		return _mpsse.SendNacks(self.context)
 
 	def GetAck(self):
 		"""
@@ -364,7 +305,7 @@ class MPSSE(object):
 
 		Returns one of: ACK, NACK.
 		"""
-		return self.libmpsse.GetAck(self.context)
+		return _mpsse.GetAck(self.context)
 
 	def PinHigh(self, pin):
 		"""
@@ -376,8 +317,8 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.PinHigh(self.context, pin) == MPSSE_FAIL:
-			raise Exception("Failed to set pin high: " + self.ErrorString())
+		if _mpsse.PinHigh(self.context, pin) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def PinLow(self, pin):
@@ -390,8 +331,8 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.PinLow(self.context, pin) == MPSSE_FAIL:
-			raise Exception("Failed to set pin low: " + self.ErrorString())
+		if _mpsse.PinLow(self.context, pin) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def SetDirection(self, direction):
@@ -404,8 +345,8 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.SetDirection(self.context, direction) == MPSSE_FAIL:
-			raise Exception("Failed to set direction: " + self.ErrorString())
+		if _mpsse.SetDirection(self.context, direction) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def WriteBits(self, bits, n):
@@ -418,8 +359,8 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.WriteBits(self.context, bits, n) == MPSSE_FAIL:
-			raise Exception("Failed to write bits: " +self.ErrorString())
+		if _mpsse.WriteBits(self.context, bits, n) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def ReadBits(self, n):
@@ -430,7 +371,7 @@ class MPSSE(object):
 
 		Returns an integer value with the read bits set.
 		"""
-		return ord(self.libmpsse.ReadBits(self.context, n))
+		return ord(_mpsse.ReadBits(self.context, n))
 
 	def WritePins(self, data):
 		"""
@@ -442,8 +383,8 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if self.libmpsse.WritePins(self.context, data) == MPSSE_FAIL:
-			raise Exception("Failed to write pins: " + self.ErrorString())
+		if _mpsse.WritePins(self.context, data) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
 	def ReadPins(self):
@@ -453,7 +394,7 @@ class MPSSE(object):
 
 		Returns an integer with the corresponding pin's bits set.
 		"""
-		return self.libmpsse.ReadPins(self.context)
+		return _mpsse.ReadPins(self.context)
 
 	def PinState(self, pin, state=-1):
 		"""
@@ -465,17 +406,17 @@ class MPSSE(object):
 
 		Returns a 1 if the pin is high, 0 if the pin is low.
 		"""
-		return self.libmpsse.PinState(self.context, pin, state)
+		return _mpsse.PinState(self.context, pin, state)
 
 	def Tristate(self):
 		"""
 		Puts all I/O pins into a tristate mode (FT232H only).
 		"""
-		return self.libmpsse.Tristate(self.context)
+		return _mpsse.Tristate(self.context)
 
 	def Version(self):
 		"""
 		Returns the libmpsse version number.
 		High nibble is major, low nibble is minor.
 		"""
-		return self.libmpsse.Version()
+		return _mpsse.Version()

@@ -40,6 +40,3 @@ A few notes regarding the above code:
 	   default behavior of acknowledging all received bytes.
 
 	3) Repeated start conditions are generated the same way that the first start condition was generated: by calling Start.
-
-	4) The FT232H supports tristating of the pins, which is required to support some features of I2C. This can be enabled
-           in libmpsse via the Tristate() method.

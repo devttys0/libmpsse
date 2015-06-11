@@ -123,17 +123,12 @@ struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int
 	{
 		memset(mpsse, 0, sizeof(struct mpsse_context));
 
-		/* Set cs to the default chip select pin */
-		mpsse->cs = CS;
-
 		/* Legacy; flushing is no longer needed, so disable it by default. */
 		FlushAfterRead(mpsse, 0);
 
 		/* ftdilib initialization */
 		if(ftdi_init(&mpsse->ftdi) == 0)
 		{
-			mpsse->ftdi_initialized = 1;
-
 			/* Set the FTDI interface  */
 			ftdi_set_interface(&mpsse->ftdi, interface);
 
@@ -217,12 +212,8 @@ void Close(struct mpsse_context *mpsse)
 	{
 		if(mpsse->open)
 		{
-			ftdi_usb_close(&mpsse->ftdi);
 			ftdi_set_bitmode(&mpsse->ftdi, 0, BITMODE_RESET);
-		}
-
-		if(mpsse->ftdi_initialized)
-		{
+			ftdi_usb_close(&mpsse->ftdi);
 			ftdi_deinit(&mpsse->ftdi);
 		}
 
@@ -257,31 +248,6 @@ void EnableBitmode(struct mpsse_context *mpsse, int tf)
 	}
 }
 
-int ConfigurePinIO(struct mpsse_context *mpsse)
-{
-	/* Clock, data out, chip select pins are outputs; all others are inputs. */
-	mpsse->tris = DEFAULT_TRIS | mpsse->cs;
-	
-	/* Clock and chip select pins idle high; all others are low */
-	mpsse->pidle = mpsse->pstart = mpsse->pstop = DEFAULT_PORT | mpsse->cs;
-	
-	/* During reads and writes the chip select pin is brought low */
-	mpsse->pstart &= ~mpsse->cs;
-
-	return MPSSE_OK;
-}
-
-int SetCSPin(struct mpsse_context *mpsse, int pin)
-{
-	mpsse->cs = pin;
-	return ConfigurePinIO(mpsse);
-}
-
-int IsOpen(struct mpsse_context *mpsse)
-{
-	return mpsse->open;
-}
-
 /*
  * Sets the appropriate transmit and receive commands based on the requested mode and byte order.
  *
@@ -305,8 +271,14 @@ int SetMode(struct mpsse_context *mpsse, int endianess)
 		mpsse->rx   = MPSSE_DO_READ  | endianess;
 		mpsse->txrx = MPSSE_DO_WRITE | MPSSE_DO_READ | endianess;
 
-		/* Initialize the pin settings in the MPSSE internal structure */
-		ConfigurePinIO(mpsse);
+		/* Clock, data out, chip select pins are outputs; all others are inputs. */
+		mpsse->tris = DEFAULT_TRIS;
+
+		/* Clock and chip select pins idle high; all others are low */
+		mpsse->pidle = mpsse->pstart = mpsse->pstop = DEFAULT_PORT;
+
+		/* During reads and writes the chip select pin is brought low */
+		mpsse->pstart &= ~CS;
 
 		/* Disable FTDI internal loopback */
 	        SetLoopback(mpsse, 0);
@@ -431,32 +403,34 @@ int SetClock(struct mpsse_context *mpsse, uint32_t freq)
 {
 	int retval = MPSSE_FAIL;
 	uint32_t system_clock = 0;
-	uint16_t divisor_sixty = 0, divisor_twelve = 0, divisor=0;
+	uint16_t divisor = 0;
 	unsigned char buf[CMD_SIZE] = { 0 };
 
 	/* Do not call is_valid_context() here, as the FTDI chip may not be completely configured when SetClock is called */
-	if(mpsse && freq)
+	if(mpsse)
 	{
-		divisor_sixty = freq2div(SIXTY_MHZ, freq);
-		divisor_twelve = freq2div(TWELVE_MHZ, freq);
-		if( labs((int64_t)freq - (uint64_t)div2freq(SIXTY_MHZ, divisor_sixty)) >
-			labs((int64_t)freq - (uint64_t)div2freq(TWELVE_MHZ, divisor_twelve)))
+		if(freq > SIX_MHZ)
 		{
-			// 60MHz error > 12MHz error, select 12MHz
-			buf[0] = TCK_D5;
-			system_clock = TWELVE_MHZ;
-			divisor = divisor_twelve;
+			buf[0] = TCK_X5;
+			system_clock = SIXTY_MHZ;
 		}
 		else
 		{
-			// 60MHz is closer
-			buf[0] = TCK_X5;
-			system_clock = SIXTY_MHZ;
-			divisor = divisor_sixty;
+			buf[0] = TCK_D5;
+			system_clock = TWELVE_MHZ;
 		}
-
+		
 		if(raw_write(mpsse, buf, 1) == MPSSE_OK)
 		{
+			if(freq <= 0)
+			{
+				divisor = 0xFFFF;
+			}
+			else
+			{
+				divisor = freq2div(system_clock, freq);
+			}
+	
 			buf[0] = TCK_DIVISOR;
 			buf[1] = (divisor & 0xFF);
 			buf[2] = ((divisor >> 8) & 0xFF);
@@ -1207,7 +1181,7 @@ int WritePins(struct mpsse_context *mpsse, uint8_t data)
 	{
 		if(mpsse->mode == BITBANG)
 		{
-			if(ftdi_write_data(&mpsse->ftdi, &data, 1) == 1)
+			if(ftdi_write_data(&mpsse->ftdi, &data, 1) == 0)
 			{
 				retval = MPSSE_OK;
 			}

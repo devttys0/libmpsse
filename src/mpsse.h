@@ -39,9 +39,6 @@
 
 #define NULL_CONTEXT_ERROR_MSG	"NULL MPSSE context pointer!"
 
-/* Used by fast.c */
-unsigned char fast_rw_buf[SPI_RW_SIZE + CMD_SIZE];
-
 /* FTDI interfaces */
 enum interface
 {
@@ -114,8 +111,8 @@ enum i2c_ack
 	NACK = 1
 };
 
-#define DEFAULT_TRIS            (SK | DO | GPIO0 | GPIO1 | GPIO2 | GPIO3)  /* SK/DO/CS and GPIOs are outputs, DI is an input (CS is variable, needs to be added at run time)*/
-#define DEFAULT_PORT            (SK)       				   /* SK and CS are high, all others low (CS is variable, needs to be added at run time)*/
+#define DEFAULT_TRIS            (SK | DO | CS | GPIO0 | GPIO1 | GPIO2 | GPIO3)  /* SK/DO/CS and GPIOs are outputs, DI is an input */
+#define DEFAULT_PORT            (SK | CS)       				/* SK and CS are high, all others low */
 
 enum mpsse_commands
 {
@@ -160,9 +157,7 @@ struct mpsse_context
 	int clock;
 	int xsize;
 	int open;
-	int ftdi_initialized;
 	int endianess;
-	uint8_t cs;
 	uint8_t tris;
 	uint8_t pstart;
 	uint8_t pstop;
@@ -181,12 +176,14 @@ struct mpsse_context *MPSSE(enum modes mode, int freq, int endianess);
 struct mpsse_context *Open(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial);
 struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial, int index);
 void Close(struct mpsse_context *mpsse);
+const char *ErrorString(struct mpsse_context *mpsse);
 int SetMode(struct mpsse_context *mpsse, int endianess);
 void EnableBitmode(struct mpsse_context *mpsse, int tf);
 int SetClock(struct mpsse_context *mpsse, uint32_t freq);
 int GetClock(struct mpsse_context *mpsse);
 int GetVid(struct mpsse_context *mpsse);
 int GetPid(struct mpsse_context *mpsse);
+const char *GetDescription(struct mpsse_context *mpsse);
 int SetLoopback(struct mpsse_context *mpsse, int enable);
 void SetCSIdle(struct mpsse_context *mpsse, int idle);
 int Start(struct mpsse_context *mpsse);
@@ -206,14 +203,26 @@ int WritePins(struct mpsse_context *mpsse, uint8_t data);
 int ReadPins(struct mpsse_context *mpsse);
 int PinState(struct mpsse_context *mpsse, int pin, int state);
 int Tristate(struct mpsse_context *mpsse);
-int IsOpen(struct mpsse_context *mpsse);
 char Version(void);
+
+#ifdef SWIGPYTHON
+typedef struct swig_string_data
+{
+        int size;
+        char *data;
+} swig_string_data;
+
+swig_string_data Read(struct mpsse_context *mpsse, int size);
+swig_string_data Transfer(struct mpsse_context *mpsse, char *data, int size);
+#else
+char *Read(struct mpsse_context *mpsse, int size);
+char *Transfer(struct mpsse_context *mpsse, char *data, int size);
+
+unsigned char fast_rw_buf[SPI_RW_SIZE + CMD_SIZE];
 int FastWrite(struct mpsse_context *mpsse, char *data, int size);
 int FastRead(struct mpsse_context *mpsse, char *data, int size);
 int FastTransfer(struct mpsse_context *mpsse, char *wdata, char *rdata, int size);
-const char *ErrorString(struct mpsse_context *mpsse);
-const char *GetDescription(struct mpsse_context *mpsse);
-char *Read(struct mpsse_context *mpsse, int size);
-char *Transfer(struct mpsse_context *mpsse, char *data, int size);
+#endif
+
 
 #endif
