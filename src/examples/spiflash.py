@@ -11,17 +11,15 @@ class SPIFlash(object):
 	CECMD = "\xc7"		# Standard SPI flash chip erase command (0xC7)
 	IDCMD = "\x9f"		# Standard SPI flash chip ID command (0x9F)
 
-	ID_LENGTH = 3		# Normal SPI chip ID length, in bytes
 	ADDRESS_LENGTH = 3	# Normal SPI flash address length (24 bits, aka, 3 bytes)
-	BLOCK_SIZE = 256	# SPI block size, writes must be done in multiples of this size
 	PP_PERIOD = .025	# Page program time, in seconds
-
+	
 	def __init__(self, speed=FIFTEEN_MHZ):
 
 		# Sanity check on the specified clock speed
 		if not speed:
 			speed = FIFTEEN_MHZ
-	
+		
 		self.flash = MPSSE(SPI0, speed, MSB)
 		self.chip = self.flash.GetDescription()
 		self.speed = self.flash.GetClock()
@@ -50,7 +48,7 @@ class SPIFlash(object):
 
 		return data
 
-	def Write(self, data, address=0):
+	def Write(self, data, address=0, blocksize=256):
 		count = 0
 
 		while count < len(data):
@@ -60,12 +58,12 @@ class SPIFlash(object):
         		self.flash.Stop()
 
 			self.flash.Start()
-			self.flash.Write(self.WCMD + self._addr2str(address) + data[address:address+self.BLOCK_SIZE])
+			self.flash.Write(self.WCMD + self._addr2str(address) + data[address:address+blocksize])
 			self.flash.Stop()
 
 			sleep(self.PP_PERIOD)
-			address += self.BLOCK_SIZE
-			count += self.BLOCK_SIZE
+			address += blocksize
+			count += blocksize
 
 	def Erase(self):
 		self.flash.Start()
@@ -76,10 +74,10 @@ class SPIFlash(object):
 		self.flash.Write(self.CECMD)
 		self.flash.Stop()
 
-	def ChipID(self):
+	def ChipID(self, idlen):
 		self.flash.Start()
 		self.flash.Write(self.IDCMD)
-		chipid = self.flash.Read(self.IDLEN)
+		chipid = self.flash.Read(idlen)
 		self.flash.Stop()
 		return chipid
 
@@ -117,9 +115,11 @@ if __name__ == "__main__":
 		print "\t-r, --read=<file>      Read data from the chip to file"
 		print "\t-w, --write=<file>     Write data from file to the chip"
 		print "\t-s, --size=<int>       Set the size of data to read/write"
+		print "\t-b, --blocksize=<int>  Set the block/page - size of data to read/write [256]"
 		print "\t-a, --address=<int>    Set the starting address for the read/write operation [0]"
 		print "\t-f, --frequency=<int>  Set the SPI clock frequency, in hertz [15,000,000]"
 		print "\t-i, --id               Read the chip ID"
+		print "\t-l, --id_len=<int>     Length of chip ID in bytes [3]"
 		print "\t-v, --verify           Verify data that has been read/written"
 		print "\t-e, --erase            Erase the entire chip"
 		print "\t-p, --pin-mappings     Display a table of SPI flash to FTDI pin mappings"
@@ -134,11 +134,13 @@ if __name__ == "__main__":
 		action = None
 		verify = False
 		address = 0
+		blocksize = 256
+		id_len = 3
 		size = 0
 		data = ""
 
 		try:
-			opts, args = GetOpt(sys.argv[1:], "f:s:a:r:w:eipvh", ["frequency=", "size=", "address=", "read=", "write=", "id", "erase", "verify", "pin-mappings", "help"])
+			opts, args = GetOpt(sys.argv[1:], "f:s:b:l:a:r:w:eipvh", ["frequency=", "size=", "blocksize=", "id_len=","address=", "read=", "write=", "erase", "id", "verify", "pin-mappings", "help"])
 		except GetoptError, e:
 			print e
 			usage()
@@ -148,6 +150,8 @@ if __name__ == "__main__":
 				freq = int(arg)
 			elif opt in ('-s', '--size'):
 				size = int(arg)
+			elif opt in ('-b', '--blocksize'):
+				blocksize = int(arg)
 			elif opt in ('-a', '--address'):
 				address = int(arg)
 			elif opt in ('-r', '--read'):
@@ -158,6 +162,8 @@ if __name__ == "__main__":
 				fname = arg
 			elif opt in ('-i', '--id'):
 				action = "id"
+			elif opt in ('-l', '--id_length'):
+				id_len = int(arg)
 			elif opt in ('-e', '--erase'):
 				action = "erase"
 			elif opt in ('-v', '--verify'):
@@ -193,15 +199,15 @@ if __name__ == "__main__":
 			data = open(fname, 'rb').read()
 			if not size:
 				size = len(data)
-
-			sys.stdout.write("Writing %d bytes from %s to the chip starting at address 0x%X..." % (size, fname, address))
+			sys.stdout.write("Writing %d bytes from %s to the chip starting at address 0x%X using a blocksize of %d ..." % (size, fname, address, blocksize))
 			sys.stdout.flush()
 			spi.Write(data[0:size], address)
 			print "done."
 
 		elif action == "id":
-
-			for byte in spi.ChipID():
+			if not id_len:
+				id_len = 3
+			for byte in spi.ChipID(id_len):
 				print ("%.2X" % ord(byte)),
 			print ""
 
@@ -231,4 +237,3 @@ if __name__ == "__main__":
 		spi.Close()
 
 	main()
-
