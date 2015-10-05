@@ -177,7 +177,7 @@ int FastTransfer(struct mpsse_context *mpsse, char *wdata, char *rdata, int size
 					rxsize = SPI_TRANSFER_SIZE;
 				}
 
-				if(build_block_buffer(mpsse, mpsse->txrx, (unsigned char *) (wdata + n), rxsize, &data_size) == MPSSE_OK)
+				if(fast_build_block_buffer(mpsse, mpsse->txrx, (unsigned char *) (wdata + n), rxsize, &data_size) == MPSSE_OK)
 				{
 					if(raw_write(mpsse, fast_rw_buf, data_size) == MPSSE_OK)
 					{
