@@ -21,7 +21,7 @@ class SPIFlash(object):
 		# Sanity check on the specified clock speed
 		if not speed:
 			speed = FIFTEEN_MHZ
-	
+
 		self.flash = MPSSE(SPI0, speed, MSB)
 		self.chip = self.flash.GetDescription()
 		self.speed = self.flash.GetClock()
@@ -79,7 +79,7 @@ class SPIFlash(object):
 	def ChipID(self):
 		self.flash.Start()
 		self.flash.Write(self.IDCMD)
-		chipid = self.flash.Read(self.IDLEN)
+		chipid = self.flash.Read(self.ID_LENGTH)
 		self.flash.Stop()
 		return chipid
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
 	def pin_mappings():
 		print """
-           Common Pin Mappings for 8-pin SPI Flash Chips       
+           Common Pin Mappings for 8-pin SPI Flash Chips
 --------------------------------------------------------------------
 | Description | SPI Flash Pin | FTDI Pin | C232HM Cable Color Code |
 --------------------------------------------------------------------
@@ -178,13 +178,13 @@ if __name__ == "__main__":
 			if fname is None or not size:
 				print "Please specify an output file and read size!"
 				usage()
-			
+
 			sys.stdout.write("Reading %d bytes starting at address 0x%X..." % (size, address))
 			sys.stdout.flush()
 			data = spi.Read(size, address)
 			open(fname, 'wb').write(data)
 			print "saved to %s." % fname
-		
+
 		elif action == "write":
 			if fname is None:
 				print "Please specify an input file!"
@@ -206,7 +206,7 @@ if __name__ == "__main__":
 			print ""
 
 		elif action == "erase":
-			
+
 			data = "\xFF" * size
 			sys.stdout.write("Erasing entire chip...")
 			sys.stdout.flush()
