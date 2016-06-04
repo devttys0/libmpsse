@@ -2,7 +2,7 @@ import pylibmpsse as _mpsse
 
 MPSSE_OK = _mpsse.MPSSE_OK
 MPSSE_FAIL = _mpsse.MPSSE_FAIL
-	
+
 MSB = _mpsse.MSB
 LSB = _mpsse.LSB
 
@@ -67,7 +67,7 @@ class MPSSE(object):
 		if mode is not None:
 			self.context = _mpsse.MPSSE(mode, frequency, endianess)
 			if self.context.open == 0:
-				raise Exception, self.ErrorString()
+				raise Exception(self.ErrorString())
 
 	def __enter__(self):
 		return self
@@ -100,7 +100,7 @@ class MPSSE(object):
 		"""
 		self.context = _mpsse.OpenIndex(vid, pid, mode, frequency, endianess, interface, description, serial, index)
 		if self.context.open == 0:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def Close(self):
@@ -111,7 +111,7 @@ class MPSSE(object):
 		"""
 		retval = _mpsse.Close(self.context)
 		self.context = None
-	
+
 	def ErrorString(self):
 		"""
 		Returns the last libftdi error string.
@@ -125,12 +125,12 @@ class MPSSE(object):
 
 		@mode      - The MPSSE mode to use, one of: SPI0, SPI1, SPI2, SPI3, I2C, GPIO, BITBANG.
 		@endianess - The endianess of data transfers, one of: MSB, LSB.
-		
+
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
 		if _mpsse.SetMode(self.context, mode, endianess) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def EnableBitmode(self, tf):
@@ -165,7 +165,7 @@ class MPSSE(object):
 		Raises an exception on failure.
 		"""
 		if _mpsse.SetClock(self.context, frequency) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def GetClock(self):
@@ -188,7 +188,7 @@ class MPSSE(object):
 
 	def GetDescription(self):
 		"""
-		Returns the description of the FTDI chip, if any. 
+		Returns the description of the FTDI chip, if any.
 		This will only be populated if __init__ was used to open the device.
 		"""
 		return _mpsse.GetDescription(self.context)
@@ -203,7 +203,7 @@ class MPSSE(object):
 		Raises an exception on failure.
 		"""
 		if _mpsse.SetLoopback(self.context, enable) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def SetCSIdle(self, idle):
@@ -224,7 +224,7 @@ class MPSSE(object):
 		Raises an exception on failure.
 		"""
 		if _mpsse.Start(self.context) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def Stop(self):
@@ -235,20 +235,20 @@ class MPSSE(object):
 		Raises an exception on failure.
 		"""
 		if _mpsse.Stop(self.context) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def Write(self, data):
 		"""
 		Writes bytes out via the selected serial protocol.
-		
+
 		@data - A string of bytes to be written.
 
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
 		if _mpsse.Write(self.context, data) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def Read(self, size):
@@ -310,7 +310,7 @@ class MPSSE(object):
 	def PinHigh(self, pin):
 		"""
 		Sets the specified GPIO pin high.
-		
+
 		@pin - Pin number 0 - 11 in GPIO mode.
 		       In all other modes, one of: GPIOL0, GPIOL1, GPIOL2, GPIOL3, GPIOH0, GPIOH1, GPIOH2, GPIOH3, GPIOH4, GPIOH5, GPIOH6, GPIOH7.
 
@@ -318,41 +318,41 @@ class MPSSE(object):
 		Raises an exception on failure.
 		"""
 		if _mpsse.PinHigh(self.context, pin) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def PinLow(self, pin):
 		"""
 		Sets the specified GPIO pin low.
-		
+
 		@pin - Pin number 0 - 11 in GPIO mode.
 		       In all other modes, one of: GPIOL0, GPIOL1, GPIOL2, GPIOL3, GPIOH0, GPIOH1, GPIOH2, GPIOH3, GPIOH4, GPIOH5, GPIOH6, GPIOH7.
-		
+
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
 		if _mpsse.PinLow(self.context, pin) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def SetDirection(self, direction):
 		"""
-		Sets the input/output direction of pins as determined by direction (1 = Output, 0 = Input). 
+		Sets the input/output direction of pins as determined by direction (1 = Output, 0 = Input).
 		For use in BITBANG mode only.
 
-		@direction -  Byte indicating input/output direction of each bit (1 is output, 0 is input). 
+		@direction -  Byte indicating input/output direction of each bit (1 is output, 0 is input).
 
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
 		if _mpsse.SetDirection(self.context, direction) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def WriteBits(self, bits, n):
 		"""
 		Performs a bitwise write of up to 8 bits at a time.
-		
+
 		@bits - An integer of bits to be written.
 		@n    - Transmit n number of least-significant bits.
 
@@ -360,7 +360,7 @@ class MPSSE(object):
 		Raises an exception on failure.
 		"""
 		if _mpsse.WriteBits(self.context, bits, n) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def ReadBits(self, n):
@@ -384,7 +384,7 @@ class MPSSE(object):
 		Raises an exception on failure.
 		"""
 		if _mpsse.WritePins(self.context, data) == MPSSE_FAIL:
-			raise Exception, self.ErrorString()
+			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
 	def ReadPins(self):
@@ -401,7 +401,7 @@ class MPSSE(object):
 		Checks the current state of the pins.
 		For use in BITBANG mode only.
 
-		@pin   - The pin number whose state you want to check. 
+		@pin   - The pin number whose state you want to check.
 		@state - The value returned by ReadPins. If not specified, ReadPins will be called automatically.
 
 		Returns a 1 if the pin is high, 0 if the pin is low.
