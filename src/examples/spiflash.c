@@ -23,7 +23,7 @@ int main(void)
 		data1 = Read(flash, SIZE);
 		Stop(flash);
 		
-		if(data)
+		if(data && data1)
 		{
 			fp = fopen(FOUT, "wb");
 			if(fp)
@@ -35,9 +35,13 @@ int main(void)
 				printf("Dumped %d bytes to %s\n", SIZE, FOUT);
 				retval = EXIT_SUCCESS;
 			}
-
-			free(data);
 		}
+
+		if(data)
+			free(data);
+
+		if(data1)
+			free(data1);
 	}
 	else
 	{

@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <mpsse.h>
 
 int main(void)
 {
 	struct mpsse_context *io = NULL;
-	int i = 0, retval = EXIT_FAILURE;
+	int retval = EXIT_FAILURE;
+	int i = 0;
+	int j = 0;
 
 	io = MPSSE(BITBANG, 0, 0);
 
@@ -13,13 +16,15 @@ int main(void)
 	{
 		for(i=0; i<10; i++)
 		{
-			PinHigh(io, 0);
-			printf("Pin 0 is: %d\n", PinState(io, 0, -1));
-			sleep(1);
-			
-			PinLow(io, 0);
-			printf("Pin 0 is: %d\n", PinState(io, 0, -1));
-			sleep(1);
+			for (j=0; j<8; j++)
+			{
+				PinHigh(io, j);
+				printf("Pin %d is: %d\n", j, PinState(io, j, -1));
+				usleep(100000);
+
+				PinLow(io, j);
+				printf("Pin %d is: %d\n", j, PinState(io, j, -1));
+			}
 		}
 
 		retval = EXIT_SUCCESS;

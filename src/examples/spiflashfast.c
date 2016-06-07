@@ -27,7 +27,7 @@ int main(void)
 		FastRead(flash, data, SIZE);
 		Stop(flash);
 		
-		if(data)
+		if(*data)
 		{
 			fp = fopen(FOUT, "wb");
 			if(fp)
