@@ -58,9 +58,11 @@ py-install:
 py-uninstall:
 
 install: py$(BUILD)-install
-	install -D -m644 lib$(TARGET).so $(DESTDIR)/$(LIBDIR)/lib$(TARGET).so
-	install -D -m644 lib$(TARGET).a  $(DESTDIR)/$(LIBDIR)/lib$(TARGET).a
-	install -D -m644 $(TARGET).h     $(DESTDIR)/$(INCDIR)/$(TARGET).h
+	install -d $(DESTDIR)/$(LIBDIR)
+	install -m644 lib$(TARGET).so $(DESTDIR)/$(LIBDIR)/lib$(TARGET).so
+	install -m644 lib$(TARGET).a  $(DESTDIR)/$(LIBDIR)/lib$(TARGET).a
+	install -d $(DESTDIR)/$(INCDIR)
+	install -m644 $(TARGET).h     $(DESTDIR)/$(INCDIR)/$(TARGET).h
 
 uninstall: py$(BUILD)-uninstall
 	rm -f $(DESTDIR)/$(LIBDIR)/lib$(TARGET).so \
