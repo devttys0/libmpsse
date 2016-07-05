@@ -124,7 +124,7 @@ struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int
 		memset(mpsse, 0, sizeof(struct mpsse_context));
 
 		/* Legacy; flushing is no longer needed, so disable it by default. */
-		FlushAfterRead(mpsse, 0);
+		FlushAfterRead(mpsse, 1);
 
 		/* ftdilib initialization */
 		if(ftdi_init(&mpsse->ftdi) == 0)
