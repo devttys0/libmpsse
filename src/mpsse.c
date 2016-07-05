@@ -642,6 +642,7 @@ int Start(struct mpsse_context *mpsse)
 
 		/* Set the start condition */
 		status |= set_bits_low(mpsse, mpsse->pstart);
+		status |= set_bits_low(mpsse, mpsse->pstart & ~SK);
 
 		/* 
 		 * Hackish work around to properly support SPI mode 3.
