@@ -16,6 +16,8 @@
 #include "mpsse.h"
 #include "support.h"
 
+#define RAW_READ_RETRY 10
+
 /* Write data to the FTDI chip */
 int raw_write(struct mpsse_context *mpsse, unsigned char *buf, int size)
 {
@@ -36,10 +38,11 @@ int raw_write(struct mpsse_context *mpsse, unsigned char *buf, int size)
 int raw_read(struct mpsse_context *mpsse, unsigned char *buf, int size)
 {
 	int n = 0, r = 0;
+	int retry = RAW_READ_RETRY;
 
 	if(mpsse->mode)
 	{
-		while(n < size)
+		while((n < size) && (retry -- > 0))
 		{
 			r = ftdi_read_data(&mpsse->ftdi, buf, size);
 			if(r < 0) break;

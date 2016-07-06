@@ -769,7 +769,10 @@ int Write(struct mpsse_context *mpsse, char *data, int size)
 					/* Read in the ACK bit and store it in mpsse->rack */
 					if(mpsse->mode == I2C)
 					{
-						raw_read(mpsse, (unsigned char *) &mpsse->rack, 1);
+						if (raw_read(mpsse, (unsigned char *) &mpsse->rack, 1) != 1) {
+							retval = MPSSE_FAIL;
+							break;
+						}
 					}
 				}
 				else
@@ -794,6 +797,7 @@ char *InternalRead(struct mpsse_context *mpsse, int size)
 	unsigned char *data = NULL, *buf = NULL;
 	unsigned char sbuf[SPI_RW_SIZE] = { 0 };
 	int n = 0, rxsize = 0, data_size = 0, retval = 0;
+	int cnt; 
 
 	if(is_valid_context(mpsse))
 	{
@@ -820,15 +824,26 @@ char *InternalRead(struct mpsse_context *mpsse, int size)
 						
 						if(retval == MPSSE_OK)
 						{
-							n += raw_read(mpsse, buf+n, rxsize);
+							cnt = raw_read(mpsse, buf+n, rxsize);
+							if (cnt != rxsize) {
+								free(buf);
+								buf = NULL;
+								break;
+							}
+
+							n += cnt;
 						}
 						else
 						{
+							free(buf);
+							buf = NULL;
 							break;
 						}
 					}
 					else
 					{
+						free(buf);
+						buf = NULL;
 						break;
 					}
 				}
