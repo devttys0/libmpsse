@@ -824,14 +824,14 @@ char *InternalRead(struct mpsse_context *mpsse, int size)
 						
 						if(retval == MPSSE_OK)
 						{
-							cnt = raw_read(mpsse, buf+n, rxsize);
-							if (cnt != rxsize) {
+							cnt = raw_read(mpsse, buf + n, rxsize);
+							if (cnt > 0) 
+								n += cnt;
+							else {
 								free(buf);
 								buf = NULL;
 								break;
 							}
-
-							n += cnt;
 						}
 						else
 						{
@@ -951,6 +951,7 @@ char *Transfer(struct mpsse_context *mpsse, char *data, int size)
 {
 	unsigned char *txdata = NULL, *buf = NULL;
 	int n = 0, data_size = 0, rxsize = 0, retval = 0;
+	int cnt;
 
 	if(is_valid_context(mpsse))
 	{
@@ -979,15 +980,26 @@ char *Transfer(struct mpsse_context *mpsse, char *data, int size)
 
 						if(retval == MPSSE_OK)
 						{
-							n += raw_read(mpsse, (buf + n), rxsize);
+							cnt = raw_read(mpsse, buf + n, rxsize);
+							if (cnt > 0) 
+								n += cnt;
+							else {
+								free(buf);
+								buf = NULL;
+								break;
+							}
 						}
 						else
 						{
+							free(buf);
+							buf = NULL;
 							break;
 						}
 					}
 					else
 					{
+						free(buf);
+						buf = NULL;
 						break;
 					}
 				}
