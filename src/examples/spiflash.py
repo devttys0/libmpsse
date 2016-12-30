@@ -10,11 +10,15 @@ class SPIFlash(object):
 	WECMD = "\x06"		# Standard SPI flash write enable command (0x06)
 	CECMD = "\xc7"		# Standard SPI flash chip erase command (0xC7)
 	IDCMD = "\x9f"		# Standard SPI flash chip ID command (0x9F)
+	STCMD = "\x05"		# winbond w25q256 status register
+	RSTENCMD = "\x66"	# winbond w25q256 reset enable command	
+	RSTCMD = "\x99"		# winbond w25q256 reset command
 
 	ID_LENGTH = 3		# Normal SPI chip ID length, in bytes
+	ST_LENGTH = 2		# status register-1 length, in bytes
 	ADDRESS_LENGTH = 3	# Normal SPI flash address length (24 bits, aka, 3 bytes)
 	BLOCK_SIZE = 256	# SPI block size, writes must be done in multiples of this size
-	PP_PERIOD = .025	# Page program time, in seconds
+	PP_PERIOD = .003	# Page program time, in seconds
 
 	def __init__(self, speed=FIFTEEN_MHZ):
 
@@ -83,6 +87,22 @@ class SPIFlash(object):
 		self.flash.Stop()
 		return chipid
 
+	def Status(self):
+		self.flash.Start()
+		self.flash.Write(self.STCMD)
+		chipstatus = self.flash.Read(self.ST_LENGTH)
+		self.flash.Stop()
+		return chipstatus
+
+	def Reset(self):
+		print "Sending reset."
+		self.flash.Start()
+		self.flash.Write(self.RSTENCMD)
+		self.flash.Stop()
+		self.flash.Start()
+		self.flash.Write(self.RSTCMD)
+		self.flash.Stop()
+
 	def Close(self):
 		self.flash.Close()
 
@@ -123,6 +143,8 @@ if __name__ == "__main__":
 		print "\t-v, --verify           Verify data that has been read/written"
 		print "\t-e, --erase            Erase the entire chip"
 		print "\t-p, --pin-mappings     Display a table of SPI flash to FTDI pin mappings"
+		print "\t-b,                    Status (busy)"
+		print "\t-x,                    Reset"
 		print "\t-h, --help             Show help"
 		print ""
 
@@ -138,7 +160,7 @@ if __name__ == "__main__":
 		data = ""
 
 		try:
-			opts, args = GetOpt(sys.argv[1:], "f:s:a:r:w:eipvh", ["frequency=", "size=", "address=", "read=", "write=", "id", "erase", "verify", "pin-mappings", "help"])
+			opts, args = GetOpt(sys.argv[1:], "f:s:a:r:w:eipvhbx", ["frequency=", "size=", "address=", "read=", "write=", "id", "erase", "verify", "pin-mappings", "help", "status", "reset"])
 		except GetoptError, e:
 			print e
 			usage()
@@ -158,6 +180,10 @@ if __name__ == "__main__":
 				fname = arg
 			elif opt in ('-i', '--id'):
 				action = "id"
+			elif opt in ('-b', '--status'):
+				action = "status"
+			elif opt in ('-x', '--reset'):
+				action = "reset"
 			elif opt in ('-e', '--erase'):
 				action = "erase"
 			elif opt in ('-v', '--verify'):
@@ -204,6 +230,17 @@ if __name__ == "__main__":
 			for byte in spi.ChipID():
 				print ("%.2X" % ord(byte)),
 			print ""
+
+		elif action == "status":
+
+			for byte in spi.Status():
+				print ("%.2X" % ord(byte)),
+			print ""
+
+		elif action == "reset":
+
+			spi.Reset()
+			print "Sent reset."
 
 		elif action == "erase":
 
