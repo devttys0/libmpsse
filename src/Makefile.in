@@ -26,17 +26,17 @@ example-code:
 	make -C examples
 
 mpsse.o: support.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c
 
 fast.o: support.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -c fast.c
+	$(CC) $(CFLAGS) -c fast.c
 
 support.o:
-	$(CC) $(CFLAGS) $(LDFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c support.c
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c support.c
 
 pyswig-build:
-	$(CC) $(CFLAGS) $(LDFLAGS) -DSWIGPYTHON -DLIBFTDI1=$(LIBFTDI1) -c support.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -DSWIGPYTHON -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c
+	$(CC) $(CFLAGS) -DSWIGPYTHON -DLIBFTDI1=$(LIBFTDI1) -c support.c
+	$(CC) $(CFLAGS) -DSWIGPYTHON -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c
 	$(SWIG) -python $(TARGET).i
 	$(CC) $(CFLAGS) -c  -DLIBFTDI1=$(LIBFTDI1) $(TARGET)_wrap.c  $(INC)
 	$(CC) $(CFLAGS) -shared $(FRAMEWORK) $(TARGET)_wrap.o mpsse.o support.o \
