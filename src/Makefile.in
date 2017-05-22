@@ -26,20 +26,20 @@ example-code:
 	make -C examples
 
 mpsse.o: support.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c
 
 fast.o: support.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -c fast.c
+	$(CC) $(CFLAGS) -c fast.c
 
 support.o:
-	$(CC) $(CFLAGS) $(LDFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c support.c
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c support.c
 
 pyswig-build:
-	$(CC) $(CFLAGS) $(LDFLAGS) -DSWIGPYTHON -DLIBFTDI1=$(LIBFTDI1) -c support.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -DSWIGPYTHON -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c
+	$(CC) $(CFLAGS) -DSWIGPYTHON -DLIBFTDI1=$(LIBFTDI1) -c support.c -o pyswig_support.o
+	$(CC) $(CFLAGS) -DSWIGPYTHON -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c -o pyswig_mpsse.o
 	$(SWIG) -python $(TARGET).i
 	$(CC) $(CFLAGS) -c  -DLIBFTDI1=$(LIBFTDI1) $(TARGET)_wrap.c  $(INC)
-	$(CC) $(CFLAGS) -shared $(FRAMEWORK) $(TARGET)_wrap.o mpsse.o support.o \
+	$(CC) $(CFLAGS) -shared $(FRAMEWORK) $(TARGET)_wrap.o pyswig_mpsse.o pyswig_support.o \
 		-o _pylib$(TARGET).so $(LDFLAGS) $(INC)
 
 pyswig-install:
