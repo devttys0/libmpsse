@@ -44,7 +44,7 @@ then
 
 	if ! test $PYDEV
 	then
-		PYDEV="/usr/include/python$(python -V 2>&1 | awk '{print $2}' | cut -d'.' -f1,2)"
+		PYDEV="$(echo 'from distutils.sysconfig import get_python_inc; print(get_python_inc())' | python)"
 	fi
 
 	AC_CHECK_HEADERS([$PYDEV/Python.h],[],[echo "error: missing python header files" && exit 1])
