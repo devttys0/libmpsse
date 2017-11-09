@@ -1,0 +1,9 @@
+src/mpsse_wrap.c
+src/pylibmpsse.py
+src/Makefile
+src/config.h
+*.so
+*.log
+*.status
+*.o
+*.a
