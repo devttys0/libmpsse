@@ -29,7 +29,7 @@ mpsse.o: support.o
 	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c
 
 fast.o: support.o
-	$(CC) $(CFLAGS) -c fast.c
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c fast.c
 
 support.o:
 	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c support.c
