@@ -1,0 +1,11 @@
+# Additional gitignore
+# Exclude all built executables.
+
+bitbang
+ds1305
+gpio
+i2ceeprom
+spiflash
+spiflashfast
+
+# No need to have patterns for windows *.exe as these are allready covered
