@@ -89,7 +89,7 @@ uint32_t div2freq(uint32_t system_clock, uint16_t div)
 }
 
 /* Builds a buffer of commands + data blocks */
-unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, unsigned char *data, size_t size, int *buf_size)
+unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, const unsigned char *data, size_t size, int *buf_size)
 {
 	unsigned char *buf = NULL;
 	int i = 0, j = 0, k = 0, dsize = 0, num_blocks = 0, total_size = 0, xfer_size = 0;

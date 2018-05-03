@@ -187,7 +187,7 @@ const char *GetDescription(struct mpsse_context *mpsse);
 int SetLoopback(struct mpsse_context *mpsse, int enable);
 void SetCSIdle(struct mpsse_context *mpsse, int idle);
 int Start(struct mpsse_context *mpsse);
-int Write(struct mpsse_context *mpsse, char *data, size_t size);
+int Write(struct mpsse_context *mpsse, const char *data, size_t size);
 int Stop(struct mpsse_context *mpsse);
 int GetAck(struct mpsse_context *mpsse);
 void SetAck(struct mpsse_context *mpsse, int ack);
@@ -213,15 +213,15 @@ typedef struct swig_string_data
 } swig_string_data;
 
 swig_string_data Read(struct mpsse_context *mpsse, size_t size);
-swig_string_data Transfer(struct mpsse_context *mpsse, char *data, size_t size);
+swig_string_data Transfer(struct mpsse_context *mpsse, const char *data, size_t size);
 #else
 char *Read(struct mpsse_context *mpsse, size_t size);
-char *Transfer(struct mpsse_context *mpsse, char *data, size_t size);
+char *Transfer(struct mpsse_context *mpsse, const char *data, size_t size);
 
 extern unsigned char fast_rw_buf[SPI_RW_SIZE + CMD_SIZE];
-int FastWrite(struct mpsse_context *mpsse, char *data, size_t size);
+int FastWrite(struct mpsse_context *mpsse, const char *data, size_t size);
 int FastRead(struct mpsse_context *mpsse, char *data, size_t size);
-int FastTransfer(struct mpsse_context *mpsse, char *wdata, char *rdata, size_t size);
+int FastTransfer(struct mpsse_context *mpsse, const char *wdata, char *rdata, size_t size);
 #endif
 
 

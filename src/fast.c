@@ -51,7 +51,7 @@ static int fast_build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, uns
  *
  * Returns MPSSE_OK on success, MPSSE_FAIL on failure.
  */
-int FastWrite(struct mpsse_context *mpsse, char *data, size_t size)
+int FastWrite(struct mpsse_context *mpsse, const char *data, size_t size)
 {
 	int buf_size = 0, txsize = 0;
 	size_t n = 0;
@@ -162,7 +162,7 @@ int FastRead(struct mpsse_context *mpsse, char *data, size_t size)
  *
  * Returns MPSSE_OK on success, MPSSE_FAIL on failure.
  */
-int FastTransfer(struct mpsse_context *mpsse, char *wdata, char *rdata, size_t size)
+int FastTransfer(struct mpsse_context *mpsse, const char *wdata, char *rdata, size_t size)
 {
 	int data_size = 0, rxsize = 0;
 	size_t n = 0;

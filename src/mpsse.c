@@ -728,7 +728,7 @@ int WriteBits(struct mpsse_context *mpsse, char bits, size_t size)
  * Returns MPSSE_OK on success.
  * Returns MPSSE_FAIL on failure.
  */
-int Write(struct mpsse_context *mpsse, char *data, size_t size)
+int Write(struct mpsse_context *mpsse, const char *data, size_t size)
 {
 	unsigned char *buf = NULL;
 	int retval = MPSSE_FAIL, buf_size = 0, txsize = 0;
@@ -755,7 +755,7 @@ int Write(struct mpsse_context *mpsse, char *data, size_t size)
 					txsize = 1;
 				}
 	
-				buf = build_block_buffer(mpsse, mpsse->tx, (unsigned char *) (data + n), txsize, &buf_size);
+				buf = build_block_buffer(mpsse, mpsse->tx, (const unsigned char *)data + n, txsize, &buf_size);
 				if(buf)
 				{	
 					retval = raw_write(mpsse, buf, buf_size);
@@ -946,9 +946,9 @@ char ReadBits(struct mpsse_context *mpsse, size_t size)
  * Returns NULL on failure.
  */
 #ifdef SWIGPYTHON
-swig_string_data Transfer(struct mpsse_context *mpsse, char *data, size_t size)
+swig_string_data Transfer(struct mpsse_context *mpsse, const char *data, size_t size)
 #else
-char *Transfer(struct mpsse_context *mpsse, char *data, size_t size)
+char *Transfer(struct mpsse_context *mpsse, const char *data, size_t size)
 #endif
 {
 	unsigned char *txdata = NULL, *buf = NULL;
