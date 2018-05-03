@@ -12,7 +12,7 @@ AC_LANG(C)
 AC_TYPE_SIZE_T
 AC_FUNC_MALLOC
 
-CFLAGS="-Wall -fPIC -fno-strict-aliasing $CFLAGS"
+CFLAGS="-Wall -Wextra -fPIC -fno-strict-aliasing $CFLAGS"
 
 dnl Check to see if the libftdi1 headers have been installed
 AC_CHECK_HEADERS([libftdi1/ftdi.h], [LIBFTDI1=1], [LIBFTDI1=""])
