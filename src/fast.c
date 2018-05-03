@@ -13,7 +13,7 @@
 unsigned char fast_rw_buf[SPI_RW_SIZE + CMD_SIZE];
 
 /* Builds a block buffer for the Fast* functions. For internal use only. */
-static int fast_build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, unsigned char *data, int size, int *buf_size)
+static int fast_build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, unsigned char *data, size_t size, int *buf_size)
 {
 	int i = 0;
 	uint16_t rsize = 0;
@@ -51,9 +51,10 @@ static int fast_build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, uns
  *
  * Returns MPSSE_OK on success, MPSSE_FAIL on failure.
  */
-int FastWrite(struct mpsse_context *mpsse, char *data, int size)
+int FastWrite(struct mpsse_context *mpsse, char *data, size_t size)
 {
-	int buf_size = 0, txsize = 0, n = 0;
+	int buf_size = 0, txsize = 0;
+	size_t n = 0;
 
 	if(is_valid_context(mpsse))
 	{
@@ -105,9 +106,10 @@ int FastWrite(struct mpsse_context *mpsse, char *data, int size)
  *
  * Returns MPSSE_OK on success, MPSSE_FAIL on failure.
  */
-int FastRead(struct mpsse_context *mpsse, char *data, int size)
+int FastRead(struct mpsse_context *mpsse, char *data, size_t size)
 {
-	int n = 0, rxsize = 0, data_size = 0;
+	int rxsize = 0, data_size = 0;
+	size_t n = 0;
 
 	if(is_valid_context(mpsse))
 	{
@@ -160,9 +162,10 @@ int FastRead(struct mpsse_context *mpsse, char *data, int size)
  *
  * Returns MPSSE_OK on success, MPSSE_FAIL on failure.
  */
-int FastTransfer(struct mpsse_context *mpsse, char *wdata, char *rdata, int size)
+int FastTransfer(struct mpsse_context *mpsse, char *wdata, char *rdata, size_t size)
 {
-	int n = 0, data_size = 0, rxsize = 0;
+	int data_size = 0, rxsize = 0;
+	size_t n = 0;
 
 	if(is_valid_context(mpsse))
 	{

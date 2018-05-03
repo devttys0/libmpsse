@@ -187,7 +187,7 @@ const char *GetDescription(struct mpsse_context *mpsse);
 int SetLoopback(struct mpsse_context *mpsse, int enable);
 void SetCSIdle(struct mpsse_context *mpsse, int idle);
 int Start(struct mpsse_context *mpsse);
-int Write(struct mpsse_context *mpsse, char *data, int size);
+int Write(struct mpsse_context *mpsse, char *data, size_t size);
 int Stop(struct mpsse_context *mpsse);
 int GetAck(struct mpsse_context *mpsse);
 void SetAck(struct mpsse_context *mpsse, int ack);
@@ -197,8 +197,8 @@ void FlushAfterRead(struct mpsse_context *mpsse, int tf);
 int PinHigh(struct mpsse_context *mpsse, int pin);
 int PinLow(struct mpsse_context *mpsse, int pin);
 int SetDirection(struct mpsse_context *mpsse, uint8_t direction);
-int WriteBits(struct mpsse_context *mpsse, char bits, int size);
-char ReadBits(struct mpsse_context *mpsse, int size);
+int WriteBits(struct mpsse_context *mpsse, char bits, size_t size);
+char ReadBits(struct mpsse_context *mpsse, size_t size);
 int WritePins(struct mpsse_context *mpsse, uint8_t data);
 int ReadPins(struct mpsse_context *mpsse);
 int PinState(struct mpsse_context *mpsse, int pin, int state);
@@ -212,16 +212,16 @@ typedef struct swig_string_data
         char *data;
 } swig_string_data;
 
-swig_string_data Read(struct mpsse_context *mpsse, int size);
-swig_string_data Transfer(struct mpsse_context *mpsse, char *data, int size);
+swig_string_data Read(struct mpsse_context *mpsse, size_t size);
+swig_string_data Transfer(struct mpsse_context *mpsse, char *data, size_t size);
 #else
-char *Read(struct mpsse_context *mpsse, int size);
-char *Transfer(struct mpsse_context *mpsse, char *data, int size);
+char *Read(struct mpsse_context *mpsse, size_t size);
+char *Transfer(struct mpsse_context *mpsse, char *data, size_t size);
 
 extern unsigned char fast_rw_buf[SPI_RW_SIZE + CMD_SIZE];
-int FastWrite(struct mpsse_context *mpsse, char *data, int size);
-int FastRead(struct mpsse_context *mpsse, char *data, int size);
-int FastTransfer(struct mpsse_context *mpsse, char *wdata, char *rdata, int size);
+int FastWrite(struct mpsse_context *mpsse, char *data, size_t size);
+int FastRead(struct mpsse_context *mpsse, char *data, size_t size);
+int FastTransfer(struct mpsse_context *mpsse, char *wdata, char *rdata, size_t size);
 #endif
 
 

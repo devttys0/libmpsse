@@ -683,10 +683,10 @@ int Start(struct mpsse_context *mpsse)
  *
  * Returns MPSSE_OK on success, MPSSE_FAIL on failure.
  */
-int WriteBits(struct mpsse_context *mpsse, char bits, int size)
+int WriteBits(struct mpsse_context *mpsse, char bits, size_t size)
 {
 	char data[8] = { 0 };
-	int i = 0, retval = MPSSE_OK;
+	int retval = MPSSE_OK;
 
 	if(size > sizeof(data))
 	{
@@ -694,7 +694,7 @@ int WriteBits(struct mpsse_context *mpsse, char bits, int size)
 	}
 
 	/* Convert each bit in bits to an array of bytes */
-	for(i=0; i<size; i++)
+	for(size_t i=0; i<size; i++)
 	{
 		if(bits & (1 << i))
 		{
@@ -728,10 +728,11 @@ int WriteBits(struct mpsse_context *mpsse, char bits, int size)
  * Returns MPSSE_OK on success.
  * Returns MPSSE_FAIL on failure.
  */
-int Write(struct mpsse_context *mpsse, char *data, int size)
+int Write(struct mpsse_context *mpsse, char *data, size_t size)
 {
 	unsigned char *buf = NULL;
-	int retval = MPSSE_FAIL, buf_size = 0, txsize = 0, n = 0;
+	int retval = MPSSE_FAIL, buf_size = 0, txsize = 0;
+	size_t n = 0;
 
 	if(is_valid_context(mpsse))
 	{
@@ -781,23 +782,24 @@ int Write(struct mpsse_context *mpsse, char *data, int size)
 				}
 			}
 		}
-	
+
 		if(retval == MPSSE_OK && n == size)
 		{
 			retval = MPSSE_OK;
 		}
 	}
-		
+
 	return retval;
 }
 
 /* Performs a read. For internal use only; see Read() and ReadBits(). */
-char *InternalRead(struct mpsse_context *mpsse, int size)
+char *InternalRead(struct mpsse_context *mpsse, size_t size)
 {
 	unsigned char *data = NULL, *buf = NULL;
 	unsigned char sbuf[SPI_RW_SIZE] = { 0 };
-	int n = 0, rxsize = 0, data_size = 0, retval = 0;
-	int cnt; 
+	size_t n = 0;
+	int rxsize = 0, data_size = 0, retval = 0;
+	int cnt;
 
 	if(is_valid_context(mpsse))
 	{
@@ -807,7 +809,7 @@ char *InternalRead(struct mpsse_context *mpsse, int size)
 			if(buf)
 			{
 				memset(buf, 0, size);
-	
+
 				while(n < size)
 				{
 					rxsize = size - n;
@@ -864,9 +866,9 @@ char *InternalRead(struct mpsse_context *mpsse, int size)
  * Returns NULL on failure.
  */
 #ifdef SWIGPYTHON
-swig_string_data Read(struct mpsse_context *mpsse, int size)
+swig_string_data Read(struct mpsse_context *mpsse, size_t size)
 #else
-char *Read(struct mpsse_context *mpsse, int size)
+char *Read(struct mpsse_context *mpsse, size_t size)
 #endif
 {
 	char *buf = NULL;
@@ -891,7 +893,7 @@ char *Read(struct mpsse_context *mpsse, int size)
  *
  * Returns an 8-bit byte containing the read bits.
  */
-char ReadBits(struct mpsse_context *mpsse, int size)
+char ReadBits(struct mpsse_context *mpsse, size_t size)
 {
 	char bits = 0;
 	char *rdata = NULL;
@@ -944,13 +946,14 @@ char ReadBits(struct mpsse_context *mpsse, int size)
  * Returns NULL on failure.
  */
 #ifdef SWIGPYTHON
-swig_string_data Transfer(struct mpsse_context *mpsse, char *data, int size)
+swig_string_data Transfer(struct mpsse_context *mpsse, char *data, size_t size)
 #else
-char *Transfer(struct mpsse_context *mpsse, char *data, int size)
+char *Transfer(struct mpsse_context *mpsse, char *data, size_t size)
 #endif
 {
 	unsigned char *txdata = NULL, *buf = NULL;
-	int n = 0, data_size = 0, rxsize = 0, retval = 0;
+	size_t n = 0;
+	int data_size = 0, rxsize = 0, retval = 0;
 	int cnt;
 
 	if(is_valid_context(mpsse))
@@ -981,7 +984,7 @@ char *Transfer(struct mpsse_context *mpsse, char *data, int size)
 						if(retval == MPSSE_OK)
 						{
 							cnt = raw_read(mpsse, buf + n, rxsize);
-							if (cnt > 0) 
+							if (cnt > 0)
 								n += cnt;
 							else {
 								free(buf);
