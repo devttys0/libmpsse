@@ -10,3 +10,10 @@ src/config.status
 src/configure
 src/mpsse_wrap.c
 src/pylibmpsse.py
+
+src/examples/bitbang
+src/examples/ds1305
+src/examples/gpio
+src/examples/i2ceeprom
+src/examples/spiflash
+src/examples/spiflashfast
