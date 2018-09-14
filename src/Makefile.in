@@ -6,8 +6,8 @@ SONAME=@SONAME@
 FRAMEWORK=@FRAMEWORK@
 BUILD=@BUILD@
 LDFLAGS=@LDFLAGS@
-CFLAGS=@CFLAGS@
 LIBFTDI1=@LIBFTDI1@
+CFLAGS=-std=c99 -DLIBFTDI1=$(LIBFTDI1) @CFLAGS@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 LIBDIR=@libdir@
@@ -26,19 +26,19 @@ example-code:
 	make -C examples
 
 mpsse.o: support.o
-	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c
+	$(CC) $(CFLAGS) -c mpsse.c
 
 fast.o: support.o
-	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c fast.c
+	$(CC) $(CFLAGS) -c fast.c
 
 support.o:
-	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) -c support.c
+	$(CC) $(CFLAGS) -c support.c
 
 pyswig-build:
-	$(CC) $(CFLAGS) -DSWIGPYTHON -DLIBFTDI1=$(LIBFTDI1) -c support.c -o pyswig_support.o
-	$(CC) $(CFLAGS) -DSWIGPYTHON -DLIBFTDI1=$(LIBFTDI1) -c mpsse.c -o pyswig_mpsse.o
+	$(CC) $(CFLAGS) -DSWIGPYTHON -c support.c -o pyswig_support.o
+	$(CC) $(CFLAGS) -DSWIGPYTHON -c mpsse.c -o pyswig_mpsse.o
 	$(SWIG) -python $(TARGET).i
-	$(CC) $(CFLAGS) -c  -DLIBFTDI1=$(LIBFTDI1) $(TARGET)_wrap.c  $(INC)
+	$(CC) $(CFLAGS) -c $(TARGET)_wrap.c  $(INC)
 	$(CC) $(CFLAGS) -shared $(FRAMEWORK) $(TARGET)_wrap.o pyswig_mpsse.o pyswig_support.o \
 		-o _pylib$(TARGET).so $(LDFLAGS) $(INC)
 
