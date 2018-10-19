@@ -388,7 +388,6 @@ class MPSSE(object):
 	def WritePins(self, data):
 		"""
 		Writes a new state to the chip's pins.
-		For use in BITBANG mode only.
 
 		@data - An integer with the bits set to the desired pin states (1 = output, 0 = input).
 
@@ -399,22 +398,41 @@ class MPSSE(object):
 			raise Exception, self.ErrorString()
 		return MPSSE_OK
 
+	def WritePinsHigh(self, data):
+		"""
+		Writes a new state to the chip's high pins.
+
+		@data - An integer with the bits set to the desired pin states (1 = output, 0 = input).
+
+		Returns MPSSE_OK on success.
+		Raises an exception on failure.
+		"""
+		if _mpsse.WritePinsHigh(self.context, data) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
+		return MPSSE_OK
+
 	def ReadPins(self):
 		"""
 		Reads the current state of the chip's pins.
-		For use in BITBANG mode only.
 
 		Returns an integer with the corresponding pin's bits set.
 		"""
 		return _mpsse.ReadPins(self.context)
 
+	def ReadPinsHigh(self):
+		"""
+		Reads the current state of the chip's high pins.
+
+		Returns an integer with the corresponding pin's bits set.
+		"""
+		return _mpsse.ReadPinsHigh(self.context)
+
 	def PinState(self, pin, state=-1):
 		"""
 		Checks the current state of the pins.
-		For use in BITBANG mode only.
 
 		@pin   - The pin number whose state you want to check.
-		@state - The value returned by ReadPins. If not specified, ReadPins will be called automatically.
+		@state - pins Value. GPIOL[0-3], GPIOH[0-7] support
 
 		Returns a 1 if the pin is high, 0 if the pin is low.
 		"""

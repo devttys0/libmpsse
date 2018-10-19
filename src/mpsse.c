@@ -1189,7 +1189,7 @@ int SetDirectionHigh(struct mpsse_context *mpsse, int direction) // uint8_t
  *
  * Returns MPSSE_OK if direction could be set, MPSSE_FAIL otherwise.
  */
-int WritePins(struct mpsse_context *mpsse, uint8_t data)
+int WritePins(struct mpsse_context *mpsse, int data)
 {
 	int retval = MPSSE_FAIL;
 
@@ -1197,18 +1197,52 @@ int WritePins(struct mpsse_context *mpsse, uint8_t data)
 	{
 		if(mpsse->mode == BITBANG)
 		{
-			if(ftdi_write_data(&mpsse->ftdi, &data, 1) == 0)
+			uint8_t _data;
+			_data = (uint8_t)data;
+			if(ftdi_write_data(&mpsse->ftdi, &_data, 1) == 0)
 			{
 				retval = MPSSE_OK;
 			}
 		} else {
-			retval = set_bits_low(mpsse, data);
+			retval = set_bits_low(mpsse, (uint8_t)data);
 		}
 	}
 
 	return retval;
 }
+/*
+ * Sets the input/output value of all  high pins.
+ *
+ * @mpsse - MPSSE context pointer.
+ * @data  - Byte indicating bit hi/low value of each bit.
+ *
+ * Returns MPSSE_OK if direction could be set, MPSSE_FAIL otherwise.
+ */
+int WritePinsHigh(struct mpsse_context *mpsse, int data)
+{
+	int retval = MPSSE_FAIL;
 
+	if(is_valid_context(mpsse))
+	{
+		retval = set_bits_high(mpsse, (uint8_t)data);
+	}
+
+	return retval;
+}
+
+// read high pins stae
+int _read_high_byte_data(struct mpsse_context *mpsse, uint8_t *data)
+{
+	struct ftdi_context *ftdi = &mpsse->ftdi;
+	uint8_t obuf;
+	int ret;
+
+	obuf = GET_BITS_HIGH;
+	ret = ftdi_write_data(ftdi, &obuf, 1);
+	ret = ftdi_read_data(ftdi, data, 1);
+
+	return ret;
+}
 /*
  * Reads the state of the chip's pins.
  *
@@ -1228,8 +1262,17 @@ int ReadPins(struct mpsse_context *mpsse)
 	return (int) val;
 }
 
+int ReadPinsHigh(struct mpsse_context *mpsse)
+{
+	uint8_t val = 0;
+	if(is_valid_context(mpsse)){
+		_read_high_byte_data(mpsse, &val);
+	}
+	return (int)val;
+}
+
 /*
- * Checks if a specific pin is high or low. For use in BITBANG mode only.
+ * Checks if a specific pin is high or low.
  *
  * @mpsse - MPSSE context pointer.
  * @pin   - The pin number.
@@ -1240,17 +1283,24 @@ int ReadPins(struct mpsse_context *mpsse)
  */
 int PinState(struct mpsse_context *mpsse, int pin, int state)
 {
-	if(state == -1)
+	if(mpsse->mode == BITBANG)
 	{
-		state = ReadPins(mpsse);
-	}
-
-	/* If not in bitbang mode, the specified pin should be one of GPIOLx. Convert these defines into an absolute pin number. */
-	if(mpsse->mode != BITBANG)
-	{
+		if(state == -1)
+		{
+			state = ReadPins(mpsse);
+		}
+	} else {
+		/* If not in bitbang mode, the specified pin should be one of GPIOLx. Convert these defines into an absolute pin number. */
 		pin += NUM_GPIOL_PINS;
-	}
 
+		uint8_t _state;
+		_state = (uint8_t)state;
+		if (pin > 7){
+			_read_high_byte_data(mpsse, &_state);
+			pin -= 8;
+			state = (int)_state;
+		}
+	}
 	return ((state & (1 << pin)) >> pin);
 }
 
