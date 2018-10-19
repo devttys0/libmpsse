@@ -1,6 +1,8 @@
 %module pylibmpsse
+%include <stdint.i>
 %{
 #include "mpsse.h"
+#include <stdint.h>
 %}
 
 %typemap(in) (char *data, int size)

@@ -338,7 +338,6 @@ class MPSSE(object):
 	def SetDirection(self, direction):
 		"""
 		Sets the input/output direction of pins as determined by direction (1 = Output, 0 = Input).
-		For use in BITBANG mode only.
 
 		@direction -  Byte indicating input/output direction of each bit (1 is output, 0 is input).
 
@@ -346,6 +345,19 @@ class MPSSE(object):
 		Raises an exception on failure.
 		"""
 		if _mpsse.SetDirection(self.context, direction) == MPSSE_FAIL:
+			raise Exception, self.ErrorString()
+		return MPSSE_OK
+
+	def SetDirectionHigh(self, direction):
+		"""
+		Sets the input/output direction of high pins as determined by direction (1 = Output, 0 = Input).
+
+		@direction -  Byte indicating input/output direction of each bit (1 is output, 0 is input).
+
+		Returns MPSSE_OK on success.
+		Raises an exception on failure.
+		"""
+		if _mpsse.SetDirectionHigh(self.context, direction) == MPSSE_FAIL:
 			raise Exception, self.ErrorString()
 		return MPSSE_OK
 

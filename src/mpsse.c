@@ -1140,14 +1140,14 @@ int PinLow(struct mpsse_context *mpsse, int pin)
 }
 
 /*
- * Sets the input/output direction of all pins. For use in BITBANG mode only.
+ * Sets the input/output direction of all pins.
  *
  * @mpsse     - MPSSE context pointer.
  * @direction - Byte indicating input/output direction of each bit.  1 is out.
  *
  * Returns MPSSE_OK if direction could be set, MPSSE_FAIL otherwise.
  */
-int SetDirection(struct mpsse_context *mpsse, uint8_t direction)
+int SetDirection(struct mpsse_context *mpsse, int direction)
 {
 	int retval = MPSSE_FAIL;
 
@@ -1155,15 +1155,27 @@ int SetDirection(struct mpsse_context *mpsse, uint8_t direction)
 	{
 		if(mpsse->mode == BITBANG)
 		{
-			if(ftdi_set_bitmode(&mpsse->ftdi, direction, BITMODE_BITBANG) == 0)
+			if(ftdi_set_bitmode(&mpsse->ftdi, (uint8_t)direction, BITMODE_BITBANG) == 0)
 			{
 				retval = MPSSE_OK;
 			}
 		} else {
-			mpsse->tris = direction;
+			mpsse->tris = (uint8_t)direction;
 			retval = set_bits_low(mpsse, mpsse->pidle);
-			// TODO: also set_bits_high
 		}
+	}
+
+	return retval;
+}
+
+int SetDirectionHigh(struct mpsse_context *mpsse, int direction) // uint8_t
+{
+	int retval = MPSSE_FAIL;
+
+	if(is_valid_context(mpsse))
+	{
+		mpsse->trish = (uint8_t)direction;
+		retval = set_bits_high(mpsse, mpsse->pidle);
 	}
 
 	return retval;
