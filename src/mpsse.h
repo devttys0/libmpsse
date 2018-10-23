@@ -1,4 +1,4 @@
-#ifndef _LIBMPSSE_H_ 
+#ifndef _LIBMPSSE_H_
 #define _LIBMPSSE_H_
 
 #include <stdint.h>
@@ -16,7 +16,7 @@
 #define LSB			0x08
 
 #define CHUNK_SIZE		65535
-#define SPI_RW_SIZE		(63 * 1024) 
+#define SPI_RW_SIZE		(63 * 1024)
 #define SPI_TRANSFER_SIZE	512
 #define I2C_TRANSFER_SIZE	64
 
@@ -111,8 +111,8 @@ enum i2c_ack
 	NACK = 1
 };
 
-#define DEFAULT_TRIS            (SK | DO | CS | GPIO0 | GPIO1 | GPIO2 | GPIO3)  /* SK/DO/CS and GPIOs are outputs, DI is an input */
-#define DEFAULT_PORT            (SK | CS)       				/* SK and CS are high, all others low */
+#define DEFAULT_TRIS            (SK | DO | CS)		/* SK/DO/CS are outputs, DI and GPIOLs are input */
+#define DEFAULT_PORT            (SK | CS)     		/* SK and CS are high, all others low */
 
 enum mpsse_commands
 {
@@ -196,11 +196,14 @@ void SendNacks(struct mpsse_context *mpsse);
 void FlushAfterRead(struct mpsse_context *mpsse, int tf);
 int PinHigh(struct mpsse_context *mpsse, int pin);
 int PinLow(struct mpsse_context *mpsse, int pin);
-int SetDirection(struct mpsse_context *mpsse, uint8_t direction);
+int SetDirection(struct mpsse_context *mpsse, int direction);
+int SetDirectionHigh(struct mpsse_context *mpsse, int direction);
 int WriteBits(struct mpsse_context *mpsse, char bits, int size);
 char ReadBits(struct mpsse_context *mpsse, int size);
-int WritePins(struct mpsse_context *mpsse, uint8_t data);
+int WritePins(struct mpsse_context *mpsse, int data);
+int WritePinsHigh(struct mpsse_context *mpsse, int data);
 int ReadPins(struct mpsse_context *mpsse);
+int ReadPinsHigh(struct mpsse_context *mpsse);
 int PinState(struct mpsse_context *mpsse, int pin, int state);
 int Tristate(struct mpsse_context *mpsse);
 char Version(void);
