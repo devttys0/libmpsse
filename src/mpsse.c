@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <unistd.h>
+#include <time.h>
 
 #if LIBFTDI1 == 1
 #include <libftdi1/ftdi.h>
@@ -173,7 +173,10 @@ struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int
 								mpsse->open = 1;
 
 								/* Give the chip a few mS to initialize */
-								usleep(SETUP_DELAY);
+								struct timespec setup_delay;
+								setup_delay.tv_sec = 0;
+								setup_delay.tv_nsec = SETUP_DELAY * 1000;
+								nanosleep(&setup_delay, NULL);
 
 								/*
 								 * Not all FTDI chips support all the commands that SetMode may have sent.
