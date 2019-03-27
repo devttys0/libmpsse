@@ -2,87 +2,72 @@ AC_PREREQ([2.65])
 AC_INIT([libmpsse],[1.3.2],[https://github.com/l29ah/libmpsse/issues])
 
 AC_ARG_ENABLE([python],AS_HELP_STRING([--disable-python], [Do not build Python wrappers]))
-AS_IF([test "x$enable_python" != "xno"], [BUILD="swig"], [BUILD=""])
 
 AC_CONFIG_SRCDIR([mpsse.c])
+AC_CONFIG_MACRO_DIR([m4])
 
+AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_PROG_AR
 AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AC_PROG_LN_S
 AC_LANG(C)
 
 AC_TYPE_SIZE_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT8_T
 AC_FUNC_MALLOC
 
-CFLAGS="-Wall -Wextra -fPIC -fno-strict-aliasing $CFLAGS"
+# Requirements/checks detected by autoscan
+AC_CHECK_FUNCS([floor memset strchr strdup strstr])
+AC_CHECK_HEADERS([float.h limits.h])
+AC_CHECK_HEADER_STDBOOL
+
+LT_INIT
+AC_ENABLE_SHARED
+AC_ENABLE_STATIC
 
 dnl Check to see if the libftdi1 headers have been installed
-AC_CHECK_HEADERS([libftdi1/ftdi.h], [LIBFTDI1=1], [LIBFTDI1=""])
+AC_CHECK_HEADERS([libftdi1/ftdi.h], [LIBFTDI1=1],
+                 [AC_CHECK_HEADERS([ftdi.h],[LIBFTDI1=0],
+                                   [AC_MSG_ERROR([missing libftdi header files])])])
 
-dnl If libftdi1 headers were not detected, check for libftdi headers/library
-if ! test $LIBFTDI1
-then
-	AC_CHECK_HEADERS([ftdi.h],[LIBFTDI1=0],[echo "error: missing libftdi header files" && exit 1])
-	AC_CHECK_LIB([ftdi],[ftdi_init],[],[echo "error: missing libftdi library" && exit 1],[])
-	LDFLAGS="-lftdi $LDFLAGS"
-dnl Else check for the libftdi1 library
-else
-	AC_CHECK_LIB([ftdi1],[ftdi_init],[],[echo "error: missing libftdi1 library" && exit 1],[])
-	LDFLAGS="-lftdi1 $LDFLAGS"
-fi
+AC_CHECK_LIB([ftdi1],[ftdi_init],[],
+             [AC_CHECK_LIB([ftdi],[ftdi_init],[],[AC_MSG_ERROR([missing libftdi library])],[])],[])
 
-if test $BUILD
-then
-	if ! test $SWIG
-	then
-		SWIG="$(which swig)"
-	fi
+AC_PATH_PROG([SWIG], [swig], [no])
+AM_PATH_PYTHON
+AC_ARG_VAR([PYTHON_INCLUDE], [Include flags for Python, bypassing python-config])
+AC_ARG_VAR([PYTHON_LIBS], [Libs flags for Python, bypassing python-config])
+AC_ARG_VAR([PYTHON_CONFIG], [Path to python config])
 
-	if ! test $SWIG
-	then
-		echo "error: could not locate swig"
-		exit 1
-	fi
+AM_CONDITIONAL([BUILD_PYTHON_WRAPPERS], [test "x$enable_python" != "xno"])
+AS_IF([test "x$enable_python" != "xno"], [
+    AS_IF([test "$SWIG" = no], [AC_MSG_ERROR([swig not found])])
 
-	if ! test $PYDEV
-	then
-		PYDEV="$(echo 'from distutils.sysconfig import get_python_inc; print(get_python_inc())' | python)"
-	fi
+    AS_IF([test -z "$PYTHON_CONFIG"], [
+           AC_PATH_PROGS([PYTHON_CONFIG], [python${PYTHON_VERSION}-config python-config], [no])
+           AS_IF([test "$PYTHON_CONFIG" = no], AC_MSG_ERROR([can't find python-config]))
+           ])
 
-	AC_CHECK_HEADERS([$PYDEV/Python.h],[],[echo "error: missing python header files" && exit 1])
+    AS_IF([test -z "$PYTHON_INCLUDE"], [
+           AC_MSG_CHECKING([Python include flags])
+           PYTHON_INCLUDE=`$PYTHON_CONFIG --includes`
+           AC_MSG_RESULT([$PYTHON_INCLUDE])
+           ])
 
-	if ! test $PYLIB
-	then
-		dnl This is a hack to get a valid python library path
-		echo "import sys" > pylib.py
-		echo "for path in sys.path: print(path)" >> pylib.py
-		PYLIB="$(python pylib.py | grep -e '-packages$' | head -1)"
-		rm -f pylib.py
-	fi
+    AS_IF([test -z "$PYTHON_LIBS"], [
+           AC_MSG_CHECKING([Python libs flags])
+           PYTHON_LIBS=`$PYTHON_CONFIG --libs`
+           AC_MSG_RESULT([$PYTHON_LIBS])
+           ])
+])
 
-	if ! test -d $PYLIB
-	then
-		echo "error: could not locate python library path"
-		exit 1
-	fi
-fi
 
-dnl OSX specific compiler flags
-if test "$(uname)" == "Darwin"
-then
-	SONAME="-install_name"
-	FRAMEWORK="-framework Python"
-else
-	SONAME="-soname"
-	FRAMEWORK=""
-fi
-
-cp confdefs.h config.h
-
-AC_SUBST(BUILD, $BUILD)
-AC_SUBST(SWIG, $SWIG)
-AC_SUBST(PYDEV, $PYDEV)
-AC_SUBST(PYLIB, $PYLIB)
-AC_SUBST(SONAME, $SONAME)
-AC_SUBST(FRAMEWORK, $FRAMEWORK)
-AC_SUBST(LIBFTDI1, $LIBFTDI1)
-AC_CONFIG_FILES([Makefile])
+AC_SUBST(PYTHON_INCLUDE)
+AC_SUBST(PYTHON_LIBS)
+AC_SUBST(LIBFTDI1)
+AC_CONFIG_FILES([Makefile examples/Makefile])
 AC_OUTPUT
