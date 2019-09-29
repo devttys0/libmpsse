@@ -28,7 +28,7 @@ in Python:
    respective C functions. However, in Python the class constructor (MPSSE) and Open method have 
    sensible defaults for several of their arguments so not all arguments are required. 
 
-See the [README.C](docs/README.C) and [README.PYTHON](docs/README.PYTHON) files for more details.
+See the [README.C](docs/README.C) and [README.PYTHON.html](docs/README.PYTHON.html) files for more details.
 
 # CODE EXAMPLES
 
