@@ -247,7 +247,7 @@ class MPSSE(object):
 		Returns MPSSE_OK on success.
 		Raises an exception on failure.
 		"""
-		if _mpsse.Write(self.context, data) == MPSSE_FAIL:
+		if _mpsse.Write(self.context, data, len(data)) == MPSSE_FAIL:
 			raise Exception(self.ErrorString())
 		return MPSSE_OK
 
