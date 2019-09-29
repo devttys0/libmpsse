@@ -5,6 +5,8 @@ chips. Additionally, it provides control over the GPIO pins on the FTDI chips an
 bitbang mode as well. Based around the libftdi library, it is written in C and includes a Python wrapper 
 courtesy of swig.
 
+See [INSTALL](docs/INSTALL) for the installation instructions.
+
 # LIBRARY API
 
 In version 1.0 libmpsse was modified to support multiple simultaneous FTDI chips inside a single process,
