@@ -6,4 +6,4 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq libftdi-dev swig
 script:
-  - cd src && autoreconf --install && ./configure && make
+  - cd src && autoreconf --install && ./configure && scan-build make
