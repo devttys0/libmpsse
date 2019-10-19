@@ -1,5 +1,7 @@
 # ABOUT
 
+[![Build Status](https://travis-ci.org/l29ah/libmpsse.svg?branch=master)](https://travis-ci.org/l29ah/libmpsse)
+
 Libmpsse is a library for interfacing with SPI/I2C devices via FTDI's FT-2232 family of USB to serial
 chips. Additionally, it provides control over the GPIO pins on the FTDI chips and supports a raw
 bitbang mode as well. Based around the libftdi library, it is written in C and includes a Python wrapper 
