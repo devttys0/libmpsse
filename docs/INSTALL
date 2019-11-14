@@ -23,12 +23,11 @@ INSTALLATION
 	may set the following environment variables:
 
 		SWIG   - Path to the swig binary
-		PYDEV  - Path to the python include directory where the python header files are located
-		PYLIB  - Path to the python library directory where python modules should be installed
+		PYTHON - Path to the python binary
 
 	Example:
 
-		$ PYDEV=/usr/local/include/python2.6/ ./configure
+		$ PYTHON=/usr/bin/python3 ./configure
 		$ make
 		# make install
 
