@@ -69,6 +69,15 @@ struct mpsse_context *MPSSE(enum modes mode, int freq, int endianess)
 	return mpsse;
 }
 
+static struct mpsse_context *OpenIndexInternal(int vid, int pid, enum modes mode, int freq,
+		int endianess, int interface, const char *description, const char *serial, int index,
+		unsigned usbBus, unsigned usbAddress);
+
+struct mpsse_context *OpenUsbDev(enum modes mode, unsigned bus, unsigned address)
+{
+	return OpenIndexInternal(0, 0, mode, 0, 0, IFACE_A, NULL, NULL, 0, bus, address);
+}
+
 /*
  * Open device by VID/PID
  *
@@ -109,6 +118,14 @@ struct mpsse_context *Open(int vid, int pid, enum modes mode, int freq, int endi
  */
 struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial, int index)
 {
+	return OpenIndexInternal(vid, pid, mode, freq, endianess, interface, description, serial, index,
+			0, 0);
+}
+
+static struct mpsse_context *OpenIndexInternal(int vid, int pid, enum modes mode, int freq,
+		int endianess, int interface, const char *description, const char *serial, int index,
+		unsigned usbBus, unsigned usbAddress)
+{
 	int status = 0;
 	struct mpsse_context *mpsse = NULL;
 
@@ -126,8 +143,21 @@ struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int
 			/* Set the FTDI interface  */
 			ftdi_set_interface(&mpsse->ftdi, interface);
 
+			int res = -1;
+
+			if (usbBus != 0 && usbAddress != 0)
+			{
+#if HAVE_LIBFTDI1_5
+				res = ftdi_usb_open_bus_addr(&mpsse->ftdi, usbBus, usbAddress);
+#endif
+			}
+			else
+			{
+				res = ftdi_usb_open_desc_index(&mpsse->ftdi, vid, pid, description, serial, index);
+			}
+
 			/* Open the specified device */
-			if(ftdi_usb_open_desc_index(&mpsse->ftdi, vid, pid, description, serial, index) == 0)
+			if(res == 0)
 			{
 				mpsse->mode = mode;
 				mpsse->vid = vid;
