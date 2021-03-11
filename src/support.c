@@ -228,6 +228,16 @@ int set_bits_high(struct mpsse_context *mpsse, int port)
 	return raw_write(mpsse, (unsigned char *) &buf, sizeof(buf));
 }
 
+int get_bits_high(struct mpsse_context *mpsse, uint8_t* value) {
+	unsigned char buf[] = { GET_BITS_HIGH };
+
+	int res = raw_write(mpsse, buf, sizeof(buf));
+	if (res != MPSSE_OK) return res;
+
+	if (raw_read(mpsse, value, 1) != 1) return MPSSE_FAIL;
+	return MPSSE_OK;
+}
+
 /* Set the GPIO pins high/low */
 int gpio_write(struct mpsse_context *mpsse, int pin, int direction)
 {
