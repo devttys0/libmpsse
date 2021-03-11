@@ -1,6 +1,10 @@
 #ifndef _LIBMPSSE_H_
 #define _LIBMPSSE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #if HAVE_LIBFTDI1 == 1
@@ -224,5 +228,8 @@ int FastRead(struct mpsse_context *mpsse, char *data, size_t size);
 int FastTransfer(struct mpsse_context *mpsse, const char *wdata, char *rdata, size_t size);
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
