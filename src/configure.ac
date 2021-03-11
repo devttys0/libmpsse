@@ -37,6 +37,9 @@ AC_CHECK_HEADERS([libftdi1/ftdi.h], [LIBFTDI1=1],
 AC_CHECK_LIB([ftdi1],[ftdi_init],[],
              [AC_CHECK_LIB([ftdi],[ftdi_init],[],[AC_MSG_ERROR([missing libftdi library])],[])],[])
 
+PKG_CHECK_MODULES(FTDI_1_5, [libftdi1 >= 1.5], LIBFTDI1_5=1, LIBFTDI1_5=0)
+AC_DEFINE_UNQUOTED([HAVE_LIBFTDI1_5], [$LIBFTDI1_5], [Use libftdi >=1.5.])
+
 AC_PATH_PROG([SWIG], [swig], [no])
 AM_PATH_PYTHON
 AC_ARG_VAR([PYTHON_INCLUDE], [Include flags for Python, bypassing python-config])

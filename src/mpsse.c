@@ -176,7 +176,7 @@ struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int
 								 * Not all FTDI chips support all the commands that SetMode may have sent.
 								 * This clears out any errors from unsupported commands that might have been sent during set up.
 								 */
-								ftdi_usb_purge_buffers(&mpsse->ftdi);
+								ftdi_tcioflush(&mpsse->ftdi);
 							}
 						}
 					}
