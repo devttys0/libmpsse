@@ -30,7 +30,7 @@ static int fast_build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, uns
 	fast_rw_buf[i++] = ((rsize >> 8) & 0xFF);
 
 	/* On a write, copy the data to transmit after the command */
-	if((cmd == mpsse->tx || cmd == mpsse->txrx) && (i + size) <= sizeof(fast_rw_buf))
+	if((cmd == mpsse->tx || cmd == mpsse->txrx) && (i + size) <= sizeof(fast_rw_buf) && data != NULL)
 	{
 		memcpy(fast_rw_buf+i, data, size);
 

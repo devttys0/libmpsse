@@ -43,3 +43,5 @@ missing
 mpsse_wrap_python.c
 py-compile
 pyswig_*.c
+config.h.in
+stamp-h1
