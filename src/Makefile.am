@@ -35,9 +35,11 @@ pyswig_mpsse.c: mpsse.c
 pyswig_support.c: support.c
 	cp -f $< $@
 
+if BUILD_PYTHON_WRAPPERS
 install-exec-hook:
 	-rm ${pythondir}/_pylibmpsse.so
 	$(CREATE_LINK)
 
 uninstall-hook:
 	-rm ${pythondir}/_pylibmpsse.so
+endif BUILD_PYTHON_WRAPPERS
