@@ -20,6 +20,8 @@
 #include "support.h"
 #include "config.h"
 
+unsigned char fast_rw_buf[SPI_RW_SIZE + CMD_SIZE];
+
 /* List of known FT2232-based devices */
 struct vid_pid supported_devices[] = { 
 			{ 0x0403, 0x6010, "FT2232 Future Technology Devices International, Ltd" }, 
