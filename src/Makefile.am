@@ -18,6 +18,8 @@ endif !BUILD_PYTHON_WRAPPERS
 lib_LTLIBRARIES = libmpsse.la $(PYTHON_MPSSE_LA)
 libmpsse_la_SOURCES = mpsse.c support.c fast.c
 
+include_HEADERS = mpsse.h
+
 EXTRA_DIST = mpsse.i
 python_PYTHON = mpsse.py $(PYLIBMPSSE)
 
