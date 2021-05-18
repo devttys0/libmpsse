@@ -237,7 +237,7 @@ void Close(struct mpsse_context *mpsse)
 {
 	if(mpsse)
 	{
-		if(mpsse->open)
+		if(mpsse->ftdi.eeprom)
 		{
 			ftdi_set_bitmode(&mpsse->ftdi, 0, BITMODE_RESET);
 			ftdi_usb_close(&mpsse->ftdi);
