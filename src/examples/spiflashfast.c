@@ -2,7 +2,7 @@
  * Example code of using the low-latency FastRead and FastWrite functions (SPI and C only).
  * Contrast to spiflash.c.
  */
-
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpsse.h>
