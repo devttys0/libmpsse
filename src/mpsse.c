@@ -15,7 +15,7 @@
 #include "support.h"
 
 /* List of known FT2232-based devices */
-struct vid_pid supported_devices[] = {
+struct vid_pid mpsse_supported_devices[] = {
 			{ 0x0403, 0x6010, "FT2232 Future Technology Devices International, Ltd" },
 			{ 0x0403, 0x6011, "FT4232 Future Technology Devices International, Ltd" },
 			{ 0x0403, 0x6014, "FT232H Future Technology Devices International, Ltd" },
@@ -48,17 +48,17 @@ struct mpsse_context *MPSSE(enum modes mode, int freq, int endianess)
 	int i = 0;
 	struct mpsse_context *mpsse = NULL;
 
-	for(i=0; supported_devices[i].vid != 0; i++)
+	for(i=0; mpsse_supported_devices[i].vid != 0; i++)
 	{
-		if((mpsse = Open(supported_devices[i].vid, supported_devices[i].pid, mode, freq, endianess, IFACE_A, NULL, NULL)) != NULL)
+		if((mpsse = Open(mpsse_supported_devices[i].vid, mpsse_supported_devices[i].pid, mode, freq, endianess, IFACE_A, NULL, NULL)) != NULL)
 		{
 			if(mpsse->open)
 			{
-				mpsse->description = supported_devices[i].description;
+				mpsse->description = mpsse_supported_devices[i].description;
 				break;
 			}
 			/* If there is another device still left to try, free the context pointer and try again */
-			else if(supported_devices[i+1].vid != 0)
+			else if(mpsse_supported_devices[i+1].vid != 0)
 			{
 				Close(mpsse);
 				mpsse = NULL;

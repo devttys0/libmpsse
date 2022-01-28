@@ -223,6 +223,8 @@ swig_string_data Transfer(struct mpsse_context *mpsse, const char *data, size_t 
 char *Read(struct mpsse_context *mpsse, size_t size);
 char *Transfer(struct mpsse_context *mpsse, const char *data, size_t size);
 
+extern struct vid_pid mpsse_supported_devices[];
+
 extern unsigned char fast_rw_buf[SPI_RW_SIZE + CMD_SIZE];
 int FastWrite(struct mpsse_context *mpsse, const char *data, size_t size);
 int FastRead(struct mpsse_context *mpsse, char *data, size_t size);
