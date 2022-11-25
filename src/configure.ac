@@ -40,14 +40,14 @@ AC_CHECK_LIB([ftdi1],[ftdi_init],[],
 PKG_CHECK_MODULES(FTDI_1_5, [libftdi1 >= 1.5], LIBFTDI1_5=1, LIBFTDI1_5=0)
 AC_DEFINE_UNQUOTED([HAVE_LIBFTDI1_5], [$LIBFTDI1_5], [Use libftdi >=1.5.])
 
-AC_PATH_PROG([SWIG], [swig], [no])
-AM_PATH_PYTHON
-AC_ARG_VAR([PYTHON_INCLUDE], [Include flags for Python, bypassing python-config])
-AC_ARG_VAR([PYTHON_LIBS], [Libs flags for Python, bypassing python-config])
-AC_ARG_VAR([PYTHON_CONFIG], [Path to python config])
-
 AM_CONDITIONAL([BUILD_PYTHON_WRAPPERS], [test "x$enable_python" != "xno"])
 AS_IF([test "x$enable_python" != "xno"], [
+    AC_PATH_PROG([SWIG], [swig], [no])
+    AM_PATH_PYTHON
+    AC_ARG_VAR([PYTHON_INCLUDE], [Include flags for Python, bypassing python-config])
+    AC_ARG_VAR([PYTHON_LIBS], [Libs flags for Python, bypassing python-config])
+    AC_ARG_VAR([PYTHON_CONFIG], [Path to python config])
+
     AS_IF([test "$SWIG" = no], [AC_MSG_ERROR([swig not found])])
 
     AS_IF([test -z "$PYTHON_CONFIG"], [
@@ -66,11 +66,12 @@ AS_IF([test "x$enable_python" != "xno"], [
            PYTHON_LIBS=`$PYTHON_CONFIG --libs`
            AC_MSG_RESULT([$PYTHON_LIBS])
            ])
+
+    AC_SUBST(PYTHON_INCLUDE)
+    AC_SUBST(PYTHON_LIBS)
 ])
 
 
-AC_SUBST(PYTHON_INCLUDE)
-AC_SUBST(PYTHON_LIBS)
 AC_SUBST(LIBFTDI1)
 AC_CONFIG_FILES([Makefile examples/Makefile])
 AC_CONFIG_HEADERS([config.h])
