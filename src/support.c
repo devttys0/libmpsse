@@ -5,16 +5,14 @@
  * 27 December 2011
  */
 
+#include <stdlib.h>
 #include <string.h>
 
-#if LIBFTDI1 == 1
-#include <libftdi1/ftdi.h>
-#else
-#include <ftdi.h>
-#endif
-
+#include "config.h"
 #include "mpsse.h"
 #include "support.h"
+
+#define RAW_READ_RETRY 10
 
 /* Write data to the FTDI chip */
 int raw_write(struct mpsse_context *mpsse, unsigned char *buf, int size)
@@ -36,10 +34,11 @@ int raw_write(struct mpsse_context *mpsse, unsigned char *buf, int size)
 int raw_read(struct mpsse_context *mpsse, unsigned char *buf, int size)
 {
 	int n = 0, r = 0;
+	int retry = RAW_READ_RETRY;
 
 	if(mpsse->mode)
 	{
-		while(n < size)
+		while((n < size) && (retry -- > 0))
 		{
 			r = ftdi_read_data(&mpsse->ftdi, buf, size);
 			if(r < 0) break;
@@ -48,12 +47,12 @@ int raw_read(struct mpsse_context *mpsse, unsigned char *buf, int size)
 
 		if(mpsse->flush_after_read)
 		{
-			/* 
+			/*
 			 * Make sure the buffers are cleared after a read or subsequent reads may fail.
-			 * 
+			 *
 			 * Is this needed anymore? It slows down repetitive read operations by ~8%.
 			 */
-			ftdi_usb_purge_rx_buffer(&mpsse->ftdi);
+			ftdi_tciflush(&mpsse->ftdi);
 		}
 	}
 
@@ -85,11 +84,11 @@ uint32_t div2freq(uint32_t system_clock, uint16_t div)
 }
 
 /* Builds a buffer of commands + data blocks */
-unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, unsigned char *data, int size, int *buf_size)
+unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, const unsigned char *data, size_t size, int *buf_size)
 {
 	unsigned char *buf = NULL;
-       	int i = 0, j = 0, k = 0, dsize = 0, num_blocks = 0, total_size = 0, xfer_size = 0;
- 	uint16_t rsize = 0;
+	int i = 0, j = 0, k = 0, dsize = 0, num_blocks = 0, total_size = 0, xfer_size = 0;
+	uint16_t rsize = 0;
 
 	*buf_size = 0;
 
@@ -139,7 +138,7 @@ unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, unsi
 			{
 				buf[i++] = SET_BITS_LOW;
 				buf[i++] = mpsse->pstart & ~SK;
-				
+
 				/* On receive, we need to ensure that the data out line is set as an input to avoid contention on the bus */
 				if(cmd == mpsse->rx)
 				{
@@ -229,6 +228,26 @@ int set_bits_high(struct mpsse_context *mpsse, int port)
 	return raw_write(mpsse, (unsigned char *) &buf, sizeof(buf));
 }
 
+int get_bits_low(struct mpsse_context *mpsse, uint8_t* value) {
+	unsigned char buf[] = { GET_BITS_LOW };
+
+	int res = raw_write(mpsse, buf, sizeof(buf));
+	if (res != MPSSE_OK) return res;
+
+	if (raw_read(mpsse, value, 1) != 1) return MPSSE_FAIL;
+	return MPSSE_OK;
+}
+
+int get_bits_high(struct mpsse_context *mpsse, uint8_t* value) {
+	unsigned char buf[] = { GET_BITS_HIGH };
+
+	int res = raw_write(mpsse, buf, sizeof(buf));
+	if (res != MPSSE_OK) return res;
+
+	if (raw_read(mpsse, value, 1) != 1) return MPSSE_FAIL;
+	return MPSSE_OK;
+}
+
 /* Set the GPIO pins high/low */
 int gpio_write(struct mpsse_context *mpsse, int pin, int direction)
 {
@@ -240,11 +259,11 @@ int gpio_write(struct mpsse_context *mpsse, int pin, int direction)
 		{
 			mpsse->bitbang |= (1 << pin);
 		}
-		else 
+		else
 		{
 			mpsse->bitbang &= ~(1 << pin);
 		}
-		
+
 		if(set_bits_high(mpsse, mpsse->bitbang) == MPSSE_OK)
 		{
                 	retval = raw_write(mpsse, (unsigned char *) &mpsse->bitbang, 1);
@@ -286,8 +305,8 @@ int gpio_write(struct mpsse_context *mpsse, int pin, int direction)
 			{
 				mpsse->gpioh &= ~(1 << pin);
 			}
-	
-			retval = set_bits_high(mpsse, mpsse->gpioh);	
+
+			retval = set_bits_high(mpsse, mpsse->gpioh);
 		}
 	}
 

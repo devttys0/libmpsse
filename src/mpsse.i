@@ -1,4 +1,5 @@
 %module pylibmpsse
+%include "stdint.i"
 %{
 #include "mpsse.h"
 %}
@@ -17,7 +18,7 @@
 
 %typemap(out) swig_string_data
 {
-        $result = PyString_FromStringAndSize($1.data, $1.size);
+        $result = PyBytes_FromStringAndSize($1.data, $1.size);
         free($1.data);
 }
 

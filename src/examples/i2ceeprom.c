@@ -1,7 +1,7 @@
 /* 
  * Example code to read the contents of an I2C EEPROM chip.
  */
-
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpsse.h>
