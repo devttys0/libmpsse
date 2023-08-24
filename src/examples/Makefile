@@ -1,24 +1,25 @@
-LDFLAGS=-lmpsse
+LDFLAGS=-lmpsse -lftdi1
+LIBFTDI1=1
 
 all: spiflash spiflashfast i2ceeprom ds1305 gpio bitbang
 
 spiflash:
-	$(CC) $(CFLAGS) spiflash.c -o spiflash $(LDFLAGS)
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) spiflash.c -o spiflash $(LDFLAGS)
 
 spiflashfast:
-	$(CC) $(CFLAGS) spiflashfast.c -o spiflashfast $(LDFLAGS)
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) spiflashfast.c -o spiflashfast $(LDFLAGS)
 
 i2ceeprom:
-	$(CC) $(CFLAGS) i2ceeprom.c -o i2ceeprom $(LDFLAGS)
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) i2ceeprom.c -o i2ceeprom $(LDFLAGS)
 
 ds1305:
-	$(CC) $(CFLAGS) ds1305.c -o ds1305 $(LDFLAGS)
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) ds1305.c -o ds1305 $(LDFLAGS)
 
 gpio:
-	$(CC) $(CFLAGS) gpio.c -o gpio $(LDFLAGS)
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) gpio.c -o gpio $(LDFLAGS)
 
 bitbang:
-	$(CC) $(CFLAGS) bitbang.c -o bitbang $(LDFLAGS)
+	$(CC) $(CFLAGS) -DLIBFTDI1=$(LIBFTDI1) bitbang.c -o bitbang $(LDFLAGS)
 
 clean:
 	rm -f *.dSYM
