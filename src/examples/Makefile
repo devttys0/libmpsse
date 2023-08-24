@@ -1,4 +1,8 @@
-LDFLAGS=-lmpsse
+CFLAGS  = -g -Wall
+CFLAGS += -I..
+
+LDFLAGS  = -L..
+LDFLAGS += -lmpsse
 
 all: spiflash spiflashfast i2ceeprom ds1305 gpio bitbang
 
