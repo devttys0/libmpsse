@@ -1,0 +1,11 @@
+*.o
+*.user
+*.pro
+*.a
+*.so
+
+
+Makefile
+config.h
+config.log
+config.status
