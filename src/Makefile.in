@@ -1,3 +1,4 @@
+.PHONY: all clean install uninstall clean distclean examples pyswig-build pyswig-install pyswig-uninstall py-build py-install py-uninstall
 CC=@CC@
 SWIG=@SWIG@
 PYDEV=@PYDEV@
@@ -15,6 +16,8 @@ INCDIR=@includedir@
 INC=-I$(PYDEV)
 TARGET=mpsse
 
+export CFLAGS
+
 all: $(TARGET) py$(BUILD)-build
 
 $(TARGET): mpsse.o fast.o
@@ -22,7 +25,7 @@ $(TARGET): mpsse.o fast.o
 		-o lib$(TARGET).so $(LDFLAGS)
 	ar rcs lib$(TARGET).a $(TARGET).o fast.o support.o
 
-example-code:
+examples:
 	make -C examples
 
 mpsse.o: support.o
