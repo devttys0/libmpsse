@@ -5,6 +5,7 @@
  * 27 December 2011
  */
 
+#include <stdlib.h>
 #include <string.h>
 
 #if LIBFTDI1 == 1
