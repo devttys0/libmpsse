@@ -2,6 +2,7 @@
 *.o
 *.a
 *.so
+*.swp
 src/Makefile
 src/config.h
 src/config.log
@@ -10,6 +11,7 @@ src/mpsse_wrap.c
 src/pylibmpsse.py
 src/examples/bitbang
 src/examples/ds1305
+src/examples/ds3231
 src/examples/gpio
 src/examples/i2ceeprom
 src/examples/spiflash
