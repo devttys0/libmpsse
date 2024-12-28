@@ -53,7 +53,7 @@ then
 	then
 		dnl This is a hack to get a valid python library path
 		echo "import sys" > pylib.py
-		echo "for path in sys.path: print path" >> pylib.py
+		echo "for path in sys.path: print(path)" >> pylib.py
 		PYLIB="$(python pylib.py | grep -e '-packages$' | head -1)"
 		rm -f pylib.py
 	fi

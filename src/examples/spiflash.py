@@ -33,12 +33,12 @@ class SPIFlash(object):
 		self.flash.PinHigh(GPIOL1)
 
 	def _addr2str(self, address):
-        	addr_str = ""
+		addr_str = ""
 
-        	for i in range(0, self.ADDRESS_LENGTH):
-        	        addr_str += chr((address >> (i*8)) & 0xFF)
+		for i in range(0, self.ADDRESS_LENGTH):
+			addr_str += chr((address >> (i*8)) & 0xFF)
 
-        	return addr_str[::-1]
+		return addr_str[::-1]
 
 	def Read(self, count, address=0):
 		data = ''
@@ -56,8 +56,8 @@ class SPIFlash(object):
 		while count < len(data):
 
 			self.flash.Start()
-        		self.flash.Write(self.WECMD)
-        		self.flash.Stop()
+			self.flash.Write(self.WECMD)
+			self.flash.Stop()
 
 			self.flash.Start()
 			self.flash.Write(self.WCMD + self._addr2str(address) + data[address:address+self.BLOCK_SIZE])
@@ -93,8 +93,8 @@ if __name__ == "__main__":
 	from getopt import getopt as GetOpt, GetoptError
 
 	def pin_mappings():
-		print """
-           Common Pin Mappings for 8-pin SPI Flash Chips
+		print("""
+		   Common Pin Mappings for 8-pin SPI Flash Chips
 --------------------------------------------------------------------
 | Description | SPI Flash Pin | FTDI Pin | C232HM Cable Color Code |
 --------------------------------------------------------------------
@@ -107,24 +107,24 @@ if __name__ == "__main__":
 | HOLD        | 7             | ADBUS5   | Purple                  |
 | Vcc         | 8             | N/A      | Red                     |
 --------------------------------------------------------------------
-"""
+""")
 		sys.exit(0)
 
 	def usage():
-		print ""
-		print "Usage: %s [OPTIONS]" % sys.argv[0]
-		print ""
-		print "\t-r, --read=<file>      Read data from the chip to file"
-		print "\t-w, --write=<file>     Write data from file to the chip"
-		print "\t-s, --size=<int>       Set the size of data to read/write"
-		print "\t-a, --address=<int>    Set the starting address for the read/write operation [0]"
-		print "\t-f, --frequency=<int>  Set the SPI clock frequency, in hertz [15,000,000]"
-		print "\t-i, --id               Read the chip ID"
-		print "\t-v, --verify           Verify data that has been read/written"
-		print "\t-e, --erase            Erase the entire chip"
-		print "\t-p, --pin-mappings     Display a table of SPI flash to FTDI pin mappings"
-		print "\t-h, --help             Show help"
-		print ""
+		print("")
+		print("Usage: %s [OPTIONS]" % sys.argv[0])
+		print("")
+		print("\t-r, --read=<file>      Read data from the chip to file")
+		print("\t-w, --write=<file>     Write data from file to the chip")
+		print("\t-s, --size=<int>       Set the size of data to read/write")
+		print("\t-a, --address=<int>    Set the starting address for the read/write operation [0]")
+		print("\t-f, --frequency=<int>  Set the SPI clock frequency, in hertz [15,000,000]")
+		print("\t-i, --id               Read the chip ID")
+		print("\t-v, --verify           Verify data that has been read/written")
+		print("\t-e, --erase            Erase the entire chip")
+		print("\t-p, --pin-mappings     Display a table of SPI flash to FTDI pin mappings")
+		print("\t-h, --help             Show help")
+		print("")
 
 		sys.exit(1)
 
@@ -139,8 +139,8 @@ if __name__ == "__main__":
 
 		try:
 			opts, args = GetOpt(sys.argv[1:], "f:s:a:r:w:eipvh", ["frequency=", "size=", "address=", "read=", "write=", "id", "erase", "verify", "pin-mappings", "help"])
-		except GetoptError, e:
-			print e
+		except(GetoptError, e):
+			print(e)
 			usage()
 
 		for opt, arg in opts:
@@ -168,26 +168,26 @@ if __name__ == "__main__":
 				pin_mappings()
 
 		if action is None:
-			print "Please specify an action!"
+			print("Please specify an action!")
 			usage()
 
 		spi = SPIFlash(freq)
-		print "%s initialized at %d hertz" % (spi.chip, spi.speed)
+		print("%s initialized at %d hertz" % (spi.chip, spi.speed))
 
 		if action == "read":
 			if fname is None or not size:
-				print "Please specify an output file and read size!"
+				print("Please specify an output file and read size!")
 				usage()
 
 			sys.stdout.write("Reading %d bytes starting at address 0x%X..." % (size, address))
 			sys.stdout.flush()
 			data = spi.Read(size, address)
 			open(fname, 'wb').write(data)
-			print "saved to %s." % fname
+			print("saved to %s." % fname)
 
 		elif action == "write":
 			if fname is None:
-				print "Please specify an input file!"
+				print("Please specify an input file!")
 				usage()
 
 			data = open(fname, 'rb').read()
@@ -197,13 +197,13 @@ if __name__ == "__main__":
 			sys.stdout.write("Writing %d bytes from %s to the chip starting at address 0x%X..." % (size, fname, address))
 			sys.stdout.flush()
 			spi.Write(data[0:size], address)
-			print "done."
+			print("done.")
 
 		elif action == "id":
 
 			for byte in spi.ChipID():
-				print ("%.2X" % ord(byte)),
-			print ""
+				print("%.2X" % ord(byte)),
+			print("")
 
 		elif action == "erase":
 
@@ -211,7 +211,7 @@ if __name__ == "__main__":
 			sys.stdout.write("Erasing entire chip...")
 			sys.stdout.flush()
 			spi.Erase()
-			print "done."
+			print("done.")
 
 		if verify and data:
 			sys.stdout.write("Verifying...")
@@ -220,13 +220,13 @@ if __name__ == "__main__":
 			vdata = spi.Read(size, address)
 			if vdata == data:
 				if data == ("\xFF" * size):
-					print "chip is blank."
+					print("chip is blank.")
 				elif data == ("\x00" * size):
-					print "read all 0x00's."
+					print("read all 0x00's.")
 				else:
-					print "reads are identical, verification successful."
+					print("reads are identical, verification successful.")
 			else:
-				print "reads are not identical, verification failed."
+				print("reads are not identical, verification failed.")
 
 		spi.Close()
 

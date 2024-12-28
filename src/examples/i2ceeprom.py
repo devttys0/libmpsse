@@ -10,7 +10,7 @@ FOUT = "eeprom.bin"	# Output file
 try:
 	eeprom = MPSSE(I2C, FOUR_HUNDRED_KHZ)
 
-	print "%s initialized at %dHz (I2C)" % (eeprom.GetDescription(), eeprom.GetClock())
+	print("%s initialized at %dHz (I2C)" % (eeprom.GetDescription(), eeprom.GetClock()))
 
 	eeprom.Start()
 	eeprom.Write(WCMD)
@@ -32,9 +32,9 @@ try:
 	eeprom.Stop()
 	
 	open(FOUT, "wb").write(data)	
-	print "Dumped %d bytes to %s" % (len(data), FOUT)
+	print("Dumped %d bytes to %s" % (len(data), FOUT))
 	
 	eeprom.Close()
-except Exception, e:
-	print "MPSSE failure:", e
+except Exception as e:
+	print("MPSSE failure:", e)
 	

@@ -9,7 +9,7 @@ try:
 	# The DS1305's chip select pin idles low
 	ds1305.SetCSIdle(0)
 
-	print "%s initialized at %dHz (SPI mode 1)" % (ds1305.GetDescription(), ds1305.GetClock())
+	print("%s initialized at %dHz (SPI mode 1)" % (ds1305.GetDescription(), ds1305.GetClock()))
 
 	# Get the current control register value
 	ds1305.Start()
@@ -50,10 +50,10 @@ try:
 			# High 4 bits == tens of minutes, low 4 bits == minutes
 			minutes = (((minutes >> 4) * 10) + (minutes & 0x0F))
 
-			print "%.2d:%.2d" % (minutes, seconds)
+			print("%.2d:%.2d" % (minutes, seconds))
 		except KeyboardInterrupt:
 			break
 			
 	ds1305.Close()
-except Exception, e:
-	print "Error reading from DS1305:", e
+except Exception as e:
+	print("Error reading from DS1305:", e)

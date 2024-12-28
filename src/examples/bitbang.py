@@ -10,11 +10,11 @@ io = MPSSE(BITBANG);
 for i in range(0, 10):
 
 	io.PinHigh(0)
-	print "Pin 0 is:", io.PinState(0)
+	print("Pin 0 is:", io.PinState(0))
 	sleep(1)
 
 	io.PinLow(0)
-	print "Pin 0 is:", io.PinState(0)
+	print("Pin 0 is:", io.PinState(0))
 	sleep(1)
 
 io.Close()
