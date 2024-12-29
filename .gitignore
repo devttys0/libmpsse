@@ -1,14 +1,19 @@
-# exclude generated aftifacts
+*.sw?
 *.o
 *.a
 *.so
-*.swp
+*.lo
+*.la
+*~
+
 src/Makefile
 src/config.h
 src/config.log
 src/config.status
+src/configure
 src/mpsse_wrap.c
 src/pylibmpsse.py
+
 src/examples/bitbang
 src/examples/ds1305
 src/examples/ds3231

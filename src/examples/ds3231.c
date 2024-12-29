@@ -12,7 +12,7 @@
 
 // Write time initialization
 typedef struct {
-	uint8_t i2c_addr;	// 0xD0 read address, 0xD1 write address
+	uint8_t i2c_addr;	// 0xD0 write address, 0xD1 read address
 	uint8_t wd_addr;	// 0
 	uint8_t	sec;		// reg 0
 	uint8_t	min;		// reg 1
@@ -54,6 +54,10 @@ int main(void)
 	struct mpsse_context *ds3231 = NULL;
 	
 	if ((ds3231 = MPSSE(I2C, FOUR_HUNDRED_KHZ, MSB)) != NULL && ds3231->open)
+	//if ((ds3231 = OpenUsbDev(I2C, 1, 13)) != NULL &&
+	//		SetClock(ds3231, FOUR_HUNDRED_KHZ) == MPSSE_OK &&
+	//		SetMode(ds3231, MSB) == MPSSE_OK &&
+	//		ds3231->open)
 	{
 		printf("%s initialized at %dHz (I2C)\n", GetDescription(ds3231), GetClock(ds3231));
 		printf("VID 0x%04x PID 0x%04x\n", GetVid(ds3231), GetPid(ds3231));
