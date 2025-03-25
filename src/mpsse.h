@@ -173,11 +173,15 @@ struct mpsse_context
 };
 
 struct mpsse_context *MPSSE(enum modes mode, int freq, int endianess);
+struct mpsse_context *MPSSEEx(enum modes mode, int freq, int endianess, int reset_gpios);
 struct mpsse_context *Open(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial);
+struct mpsse_context *OpenEx(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial, int reset_gpios);
 struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial, int index);
+struct mpsse_context *OpenIndexEx(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial, int index, int reset_gpios);
 void Close(struct mpsse_context *mpsse);
 const char *ErrorString(struct mpsse_context *mpsse);
 int SetMode(struct mpsse_context *mpsse, int endianess);
+int SetModeEx(struct mpsse_context *mpsse, int endianess, int reset_gpios);
 void EnableBitmode(struct mpsse_context *mpsse, int tf);
 int SetClock(struct mpsse_context *mpsse, uint32_t freq);
 int GetClock(struct mpsse_context *mpsse);
