@@ -51,12 +51,29 @@ struct vid_pid supported_devices[] = {
  */
 struct mpsse_context *MPSSE(enum modes mode, int freq, int endianess)
 {
+	return MPSSEEx(mode, freq, endianess, 1);
+}
+
+/*
+ * Opens and initializes the first FTDI device found.
+ *
+ * @mode        - Mode to open the device in. One of enum modes.
+ * @freq        - Clock frequency to use for the specified mode.
+ * @endianess   - Specifies how data is clocked in/out (MSB, LSB).
+ * @reset_gpios - Whether reset (!= 0) GPIOs to the default state or not (== 0).
+ *
+ * Returns a pointer to an MPSSE context structure.
+ * On success, mpsse->open will be set to 1.
+ * On failure, mpsse->open will be set to 0.
+ */
+struct mpsse_context *MPSSEEx(enum modes mode, int freq, int endianess, int reset_gpios)
+{
 	int i = 0;
 	struct mpsse_context *mpsse = NULL;
 
 	for(i=0; supported_devices[i].vid != 0; i++)
 	{
-		if((mpsse = Open(supported_devices[i].vid, supported_devices[i].pid, mode, freq, endianess, IFACE_A, NULL, NULL)) != NULL)
+		if((mpsse = OpenEx(supported_devices[i].vid, supported_devices[i].pid, mode, freq, endianess, IFACE_A, NULL, NULL, reset_gpios)) != NULL)
 		{
 			if(mpsse->open)
 			{
@@ -93,7 +110,29 @@ struct mpsse_context *MPSSE(enum modes mode, int freq, int endianess)
  */
 struct mpsse_context *Open(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial)
 {
-	return OpenIndex(vid, pid, mode, freq, endianess, interface, description, serial, 0);
+	return OpenEx(vid, pid, mode, freq, endianess, interface, description, serial, 1);
+}
+
+/*
+ * Open device by VID/PID
+ *
+ * @vid         - Device vendor ID.
+ * @pid         - Device product ID.
+ * @mode        - MPSSE mode, one of enum modes.
+ * @freq        - Clock frequency to use for the specified mode.
+ * @endianess   - Specifies how data is clocked in/out (MSB, LSB).
+ * @interface   - FTDI interface to use (IFACE_A - IFACE_D).
+ * @description - Device product description (set to NULL if not needed).
+ * @serial      - Device serial number (set to NULL if not needed).
+ * @reset_gpios - Whether reset (!= 0) GPIOs to the default state or not (== 0).
+ *
+ * Returns a pointer to an MPSSE context structure.
+ * On success, mpsse->open will be set to 1.
+ * On failure, mpsse->open will be set to 0.
+ */
+struct mpsse_context *OpenEx(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial, int reset_gpios)
+{
+	return OpenIndexEx(vid, pid, mode, freq, endianess, interface, description, serial, 0, reset_gpios);
 }
 
 /* 
@@ -114,6 +153,29 @@ struct mpsse_context *Open(int vid, int pid, enum modes mode, int freq, int endi
  * On failure, mpsse->open will be set to 0.
  */
 struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial, int index)
+{
+	return OpenIndexEx(vid, pid, mode, freq, endianess, interface, description, serial, index, 1);
+}
+
+/*
+ * Open device by VID/PID/index
+ *
+ * @vid         - Device vendor ID.
+ * @pid         - Device product ID.
+ * @mode        - MPSSE mode, one of enum modes.
+ * @freq        - Clock frequency to use for the specified mode.
+ * @endianess   - Specifies how data is clocked in/out (MSB, LSB).
+ * @interface   - FTDI interface to use (IFACE_A - IFACE_D).
+ * @description - Device product description (set to NULL if not needed).
+ * @serial      - Device serial number (set to NULL if not needed).
+ * @index       - Device index (set to 0 if not needed).
+ * @reset_gpios - Whether reset (!= 0) GPIOs to the default state or not (== 0).
+ *
+ * Returns a pointer to an MPSSE context structure.
+ * On success, mpsse->open will be set to 1.
+ * On failure, mpsse->open will be set to 0.
+ */
+struct mpsse_context *OpenIndexEx(int vid, int pid, enum modes mode, int freq, int endianess, int interface, const char *description, const char *serial, int index, int reset_gpios)
 {
 	int status = 0;
 	struct mpsse_context *mpsse = NULL;
@@ -155,7 +217,10 @@ struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int
 				status |= ftdi_set_latency_timer(&mpsse->ftdi, LATENCY_MS);
 				status |= ftdi_write_data_set_chunksize(&mpsse->ftdi, CHUNK_SIZE);
 				status |= ftdi_read_data_set_chunksize(&mpsse->ftdi, CHUNK_SIZE);
-				status |= ftdi_set_bitmode(&mpsse->ftdi, 0, BITMODE_RESET);
+				if(reset_gpios != 0)
+				{
+					status |= ftdi_set_bitmode(&mpsse->ftdi, 0, BITMODE_RESET);
+				}
 
 				if(status == 0)
 				{
@@ -168,7 +233,7 @@ struct mpsse_context *OpenIndex(int vid, int pid, enum modes mode, int freq, int
 
 						if(SetClock(mpsse, freq) == MPSSE_OK)
 						{
-							if(SetMode(mpsse, endianess) == MPSSE_OK)
+							if(SetModeEx(mpsse, endianess, reset_gpios) == MPSSE_OK)
 							{
 								mpsse->open = 1;
 
@@ -259,6 +324,22 @@ void EnableBitmode(struct mpsse_context *mpsse, int tf)
  */
 int SetMode(struct mpsse_context *mpsse, int endianess)
 {
+	return SetModeEx(mpsse, endianess, 1);
+}
+
+/*
+ * Sets the appropriate transmit and receive commands based on the requested mode and byte order.
+ *
+ * @mpsse       - MPSSE context pointer.
+ * @endianess   - MPSSE_MSB or MPSSE_LSB.
+ * @reset_gpios - Whether reset (!= 0) GPIOs to the default state or not (== 0).
+ *
+ * Returns MPSSE_OK on success.
+ * Returns MPSSE_FAIL on failure.
+ */
+int SetModeEx(struct mpsse_context *mpsse, int endianess, int reset_gpios)
+{
+	unsigned char get_bits_command;
 	int retval = MPSSE_OK, i = 0, setup_commands_size = 0;
 	unsigned char buf[CMD_SIZE] = { 0 };
 	unsigned char setup_commands[CMD_SIZE*MAX_SETUP_COMMANDS] = { 0 };
@@ -274,8 +355,25 @@ int SetMode(struct mpsse_context *mpsse, int endianess)
 		/* Clock, data out, chip select pins are outputs; all others are inputs. */
 		mpsse->tris = DEFAULT_TRIS;
 
-		/* Clock and chip select pins idle high; all others are low */
-		mpsse->pidle = mpsse->pstart = mpsse->pstop = DEFAULT_PORT;
+		if(reset_gpios == 0)
+		{
+			get_bits_command = GET_BITS_LOW;
+			retval = raw_write(mpsse, &get_bits_command, 1);
+			if(retval == MPSSE_OK)
+			{
+				if(raw_read(mpsse, &mpsse->pidle, 1) != 1)
+				{
+					retval = MPSSE_FAIL;
+				}
+			}
+		}
+		else
+		{
+			mpsse->pidle = 0;
+		}
+		/* Clock and chip select pins idle high */
+		mpsse->pidle = mpsse->pstart = mpsse->pstop = DEFAULT_PORT
+			| (mpsse->pidle & (GPIO0 | GPIO1 | GPIO2 | GPIO3));
 
 		/* During reads and writes the chip select pin is brought low */
 		mpsse->pstart &= ~CS;
@@ -370,16 +468,33 @@ int SetMode(struct mpsse_context *mpsse, int endianess)
 		{
 			/* Set the idle pin states */
 			set_bits_low(mpsse, mpsse->pidle);
-	
-			/* All GPIO pins are outputs, set low */
+
+			/* All GPIOH pins are outputs */
 			mpsse->trish = 0xFF;
-			mpsse->gpioh = 0x00;
-	
-	                buf[i++] = SET_BITS_HIGH;
-	                buf[i++] = mpsse->gpioh;
-	                buf[i++] = mpsse->trish;
-	
-			retval = raw_write(mpsse, buf, i);
+
+			if(reset_gpios == 0)
+			{
+				get_bits_command = GET_BITS_HIGH;
+				retval = raw_write(mpsse, &get_bits_command, 1);
+				if(retval == MPSSE_OK)
+				{
+					if(raw_read(mpsse, &mpsse->gpioh, 1) != 1)
+					{
+						retval = MPSSE_FAIL;
+					}
+				}
+			}
+			else
+			{
+				/* Set all GPIOH pins low */
+				mpsse->gpioh = 0x00;
+
+				buf[i++] = SET_BITS_HIGH;
+				buf[i++] = mpsse->gpioh;
+				buf[i++] = mpsse->trish;
+
+				retval = raw_write(mpsse, buf, i);
+			}
 		}
 	}
 	else
